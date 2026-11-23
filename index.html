@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>İlk Notada</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;800&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Plak tezgâhı: ortada dönen plak (altında YouTube oynatıcısı, bilinene kadar kapalı), altında Heardle tarzı 16 saniyelik şerit (1-2-4-7-11-16),
+   tahmin kutusu ve 6 deneme satırı. Telefon öncelikli tek sütun, en çok 560px. Pembe vurgu, mor ikincil; başlık Unbounded, metin Inter */
+:root {
+  --zemin: #f6f3fb; --kart: #ffffff; --kart-2: #f2eef8; --cizgi: #e2dbee;
+  --murekkep: #1b1626; --soluk: #696277; --ana: #1b1626; --ana-metin: #ffffff;
+  --vurgu: #e8467b; --vurgu-y: #fde3ec; --mor: #6d4fe6; --mor-y: #e9e3ff;
+  --plak: #17131f; --plak-oluk: #2b2536;
+  --yesil: #11815c; --yesil-y: #d9f3e8; --amber: #8f5b00; --amber-y: #f9ecd0; --kirmizi: #c0344b; --kirmizi-y: #fbe2e6;
+  --golge: 0 1px 2px rgba(27, 22, 38, .06), 0 10px 28px -14px rgba(27, 22, 38, .3);
+  --f: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --fb: "Unbounded", "Inter", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --zemin: #0f0c15; --kart: #18131f; --kart-2: #201a29; --cizgi: #2e2639;
+    --murekkep: #f2eef8; --soluk: #a69db4; --ana: #ff7ca4; --ana-metin: #1c0f16;
+    --vurgu: #ff7ca4; --vurgu-y: #3a1b29; --mor: #a68fff; --mor-y: #2a2145;
+    --plak: #08070b; --plak-oluk: #1f1a27;
+    --yesil: #52d4a5; --yesil-y: #14352a; --amber: #f0b84c; --amber-y: #3a2d14; --kirmizi: #ff8094; --kirmizi-y: #3d1a21;
+    --golge: 0 1px 2px rgba(0, 0, 0, .4), 0 12px 30px -14px rgba(0, 0, 0, .85); color-scheme: dark;
+  }
+}
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; min-height: 100vh; color: var(--murekkep); font: 400 16px/1.5 var(--f); -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent;
+  background: radial-gradient(110% 55% at 50% -10%, var(--mor-y), transparent 70%), var(--zemin); background-color: var(--zemin); }
+.sayfa { max-width: 560px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(32px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.ust { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.marka { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.logo { width: 40px; height: 40px; flex: none; border-radius: 50%; box-shadow: var(--golge);
+  background: radial-gradient(circle, var(--vurgu) 0 22%, var(--plak) 23% 100%); }
+h1 { margin: 0; font: 800 1.3rem/1.05 var(--fb); letter-spacing: -.02em; }
+h1 small { display: block; margin-top: 4px; font: 500 .72rem/1.2 var(--f); letter-spacing: .03em; color: var(--soluk); }
+.skor { display: flex; gap: 6px; margin: 0; }
+.skor div { min-width: 3.4rem; padding: 4px 10px; border-radius: 12px; background: var(--kart); border: 1px solid var(--cizgi); text-align: center; box-shadow: var(--golge); }
+.skor dt { font-size: .6rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--soluk); }
+.skor dd { margin: 0; font: 800 1rem/1.4 var(--fb); font-variant-numeric: tabular-nums; }
+.kart { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; min-width: 0; padding: 16px; border-radius: 24px; background: var(--kart);
+  border: 1px solid var(--cizgi); box-shadow: var(--golge); }
+/* Sahne: 16:9 video kutusu; plak üstünde durur, bilinince kayıp video görünür */
+.sahne { position: relative; aspect-ratio: 16 / 9; max-width: 100%; border-radius: 18px; overflow: hidden; background: var(--kart-2); }
+.video, .video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.ortu { position: absolute; inset: 0; display: grid; place-items: center; background: radial-gradient(70% 90% at 50% 50%, var(--mor-y), var(--kart-2));
+  transition: opacity .6s ease, visibility .6s; }
+.sahne.acik .ortu { opacity: 0; visibility: hidden; }
+.ortu > * { grid-area: 1 / 1; }
+.plak { height: 84%; width: auto; aspect-ratio: 1; border-radius: 50%; position: relative; box-shadow: 0 14px 30px -12px rgba(0, 0, 0, .6);
+  background: repeating-radial-gradient(circle, var(--plak) 0 2px, var(--plak-oluk) 2.5px 3px), var(--plak); }
+.plak::before { content: ""; position: absolute; inset: 0; border-radius: 50%;
+  background: conic-gradient(from 30deg, transparent 0 10%, rgba(255, 255, 255, .09) 14%, transparent 20% 60%, rgba(255, 255, 255, .07) 64%, transparent 70%); }
+.plak .etiket { position: absolute; inset: 23%; border-radius: 50%; background: radial-gradient(circle, var(--plak) 0 7%, var(--vurgu) 8% 100%); }
+.plak.doner { animation: don 1.8s linear infinite; }
+@keyframes don { to { transform: rotate(360deg); } }
+.calDug { width: 60px; height: 60px; min-height: 0; border-radius: 50%; border: 0; padding: 0; display: grid; place-items: center; cursor: pointer;
+  background: var(--kart); color: var(--murekkep); box-shadow: var(--golge); touch-action: manipulation; z-index: 1; }
+.calDug svg { width: 26px; height: 26px; fill: currentColor; }
+.calDug .dur { display: none; } .calDug.caliyor .oyna { display: none; } .calDug.caliyor .dur { display: block; }
+/* Şerit: 16 saniye; açılmış kısım mor, çalan kısım pembe */
+.serit { position: relative; height: 14px; border-radius: 99px; background: var(--kart-2); border: 1px solid var(--cizgi); overflow: hidden; }
+.serit .acilan { position: absolute; inset: 0 auto 0 0; background: var(--mor-y); transition: width .4s ease; }
+.serit .calan { position: absolute; inset: 0 auto 0 0; background: var(--vurgu); width: 0; }
+.seritAlt { display: flex; justify-content: space-between; margin-top: -8px; font-size: .78rem; color: var(--soluk); font-variant-numeric: tabular-nums; }
+.seritAlt b { color: var(--murekkep); }
+/* Tahmin: öneri listesi kutunun altında açılır */
+form { display: grid; gap: 8px; }
+.ara { position: relative; }
+.gizli { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+#tahmin { width: 100%; height: 52px; padding: 0 14px; font: 500 1.05rem var(--f); color: var(--murekkep); background: var(--kart-2);
+  border: 1.5px solid var(--cizgi); border-radius: 14px; }
+#tahmin:focus-visible { outline: none; border-color: var(--vurgu); box-shadow: 0 0 0 3px color-mix(in srgb, var(--vurgu) 25%, transparent); }
+#tahmin::placeholder { color: var(--soluk); }
+.oneri { position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 5; margin: 0; padding: 4px; list-style: none; max-height: 260px; overflow-y: auto;
+  background: var(--kart); border: 1px solid var(--cizgi); border-radius: 14px; box-shadow: var(--golge); }
+.oneri li { padding: 9px 12px; border-radius: 10px; cursor: pointer; line-height: 1.3; }
+.oneri li span { display: block; font-size: .82rem; color: var(--soluk); }
+.oneri li[aria-selected="true"], .oneri li:hover { background: var(--mor-y); }
+.oneri .yok { cursor: default; color: var(--soluk); background: none !important; }
+.dugmeler { display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px; }
+button { font: 600 1rem var(--f); border: 0; border-radius: 14px; min-height: 48px; padding: 0 18px; cursor: pointer; touch-action: manipulation; transition: transform .12s; }
+button:active:not(:disabled) { transform: translateY(1px) scale(.98); }
+button:focus-visible, summary:focus-visible { outline: 2px solid var(--vurgu); outline-offset: 2px; }
+.ana { background: var(--ana); color: var(--ana-metin); }
+.ana:disabled { opacity: .45; cursor: default; }
+.ikinci { background: var(--kart-2); color: var(--murekkep); border: 1px solid var(--cizgi); }
+.hata { margin: -4px 0 0; color: var(--kirmizi); font-weight: 600; font-size: .9rem; }
+.hata:empty { display: none; }
+.denemeler { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.denemeler li { display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 6px 12px; border-radius: 12px; border: 1.5px dashed var(--cizgi);
+  font-size: .92rem; color: var(--soluk); min-width: 0; }
+.denemeler li > span:last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.denemeler .im { flex: none; width: 22px; text-align: center; font-weight: 800; }
+.denemeler .yanlis { border-style: solid; background: var(--kirmizi-y); border-color: transparent; color: var(--kirmizi); }
+.denemeler .sanatci { border-style: solid; background: var(--amber-y); border-color: transparent; color: var(--amber); }
+.denemeler .pas { border-style: solid; background: var(--kart-2); border-color: transparent; }
+.denemeler .dogru { border-style: solid; background: var(--yesil-y); border-color: transparent; color: var(--yesil); font-weight: 700; }
+.sonuc { display: grid; gap: 10px; text-align: center; justify-items: center; }
+.sonuc p { margin: 0; }
+.cip { font-weight: 700; border-radius: 999px; padding: 5px 14px; }
+.cip.iyi { background: var(--yesil-y); color: var(--yesil); } .cip.kotu { background: var(--kirmizi-y); color: var(--kirmizi); }
+.sonuc h2 { margin: 0; font: 800 1.35rem/1.2 var(--fb); letter-spacing: -.02em; text-wrap: balance; }
+.sonuc .sanatciAd { color: var(--soluk); font-weight: 600; }
+.puan { font: 800 2rem/1 var(--fb); font-variant-numeric: tabular-nums; color: var(--vurgu); }
+.sonuc .ana { justify-self: stretch; }
+.durum { margin: 0; text-align: center; color: var(--soluk); font-size: .9rem; }
+details { background: var(--kart); border: 1px solid var(--cizgi); border-radius: 16px; padding: 12px 16px; font-size: .9rem; color: var(--soluk); }
+details summary { cursor: pointer; font-weight: 600; color: var(--murekkep); }
+details p { margin: 8px 0 0; }
+@media (prefers-reduced-motion: reduce) { .plak.doner { animation: none; } .ortu, .serit .acilan, button { transition: none; } }
+</style>
+</head>
+<body>
+<div class="sayfa">
+  <header class="ust">
+    <div class="marka"><span class="logo" aria-hidden="true"></span><h1>İlk Notada<small>Girişinden şarkıyı bil</small></h1></div>
+    <dl class="skor" aria-label="Skor">
+      <div><dt>Tur</dt><dd id="sTur">0</dd></div>
+      <div><dt>Puan</dt><dd id="sPuan">0</dd></div>
+      <div><dt>Seri</dt><dd id="sSeri">0</dd></div>
+    </dl>
+  </header>
+
+  <main class="kart">
+    <div class="sahne" id="sahne">
+      <div class="video"><div id="oynatici"></div></div>
+      <div class="ortu">
+        <div class="plak" id="plak" aria-hidden="true"><span class="etiket"></span></div>
+        <button type="button" class="calDug" id="cal" aria-label="Çal">
+          <svg class="oyna" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
+          <svg class="dur" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="serit" id="serit" aria-hidden="true"><div class="acilan" id="acilan"></div><div class="calan" id="calan"></div></div>
+    <div class="seritAlt"><span id="sureYazi"><b>1 sn</b> dinleyebilirsin</span><span>16 sn</span></div>
+    <p class="durum" id="durum">Oynatıcı yükleniyor…</p>
+
+    <form id="form" autocomplete="off">
+      <div class="ara">
+        <label class="gizli" for="tahmin">Şarkı adı</label>
+        <input id="tahmin" type="text" placeholder="Şarkı ya da sanatçı yaz…" role="combobox" aria-expanded="false" aria-controls="oneri" aria-autocomplete="list" enterkeyhint="done">
+        <ul class="oneri" id="oneri" role="listbox" hidden></ul>
+      </div>
+      <div class="dugmeler">
+        <button type="button" class="ikinci" id="pas">Pas</button>
+        <button type="submit" class="ana" id="gonder">Tahmin et</button>
+      </div>
+    </form>
+    <p class="hata" id="hata" role="alert"></p>
+    <ol class="denemeler" id="denemeler" aria-label="Denemeler"></ol>
+
+    <section class="sonuc" id="sonuc" aria-live="polite" hidden>
+      <p class="cip" id="karar"></p>
+      <h2 id="sAd"></h2>
+      <p class="sanatciAd" id="sSanatci"></p>
+      <p class="puan" id="puan"></p>
+      <button type="button" class="ana" id="sonraki">Sonraki şarkı</button>
+    </section>
+  </main>
+
+  <details>
+    <summary>Nasıl oynanır?</summary>
+    <p>Plağın ortasındaki düğmeye bas: şarkının girişinden 1 saniye çalar. Bildiysen adını yaz, listeden seç. Bilemezsen ya da "Pas" dersen dinleyebileceğin kısım uzar: 1, 2, 4, 7, 11, 16 saniye. Ne kadar az dinleyip bilirsen o kadar çok puan: 100, 80, 60, 40, 25, 10. Yanlış tahminde sanatçı doğruysa sarı yanar. Bilince ya da 6 hak bitince şarkı videosuyla baştan çalar.</p>
+  </details>
+  <details>
+    <summary>Şarkılar nereden?</summary>
+    <p>Hepsi senin YouTube Music listelerinden (Haziran–Ağustos Recap, go girl, 2024): <span id="sarkiSay"></span> şarkı. Ses YouTube oynatıcısından geliyor; puanların ve serin bu telefonda saklanır.</p>
+  </details>
+</div>
+
+<script>
+// Şarkılar: [YouTube kimliği, şarkı adı, sanatçı, girişin başladığı saniye] (kur.py gömer)
+const SARKILAR = [["h1Zn0aHceVM","Toz Pembe","manifest",0.58],["5Vt3GOvDoJc","Lafını Balla","Dolu Kadehi Ters Tut",0.0],["awzJLPqiRu4","Sarıldım Hayaline","İnsanlık Hali",0.11],["IdWuCP_j8TA","ARABA","M Lisa",0.0],["XyiTiiXSpZs","Hileli","manifest",0.53],["OMvuUkX7k5k","ELLERİM BOŞ","M Lisa",0.0],["qRKUM9k0ntY","pVg","manifest",0.07],["4pattwSV9sI","Sevdirmeden Gidemezsin","Dolu Kadehi Ters Tut",1.12],["JuPgp4cnONE","Ölürüm Daha İyi","Model",0.05],["FRdrkaWXcUM","Sahte Dualar","Dolu Kadehi Ters Tut",0.95],["RNJZJ_3-R6w","Ankara'nın Sokaklarında","Batu Akdeniz",0.61],["yShvZAiVHFI","OLMAZ","Yedinci Ev",0.52],["1WejYXW7_eQ","Beni Çağır","Pinhani",0.25],["firzCGTCdKE","Belki Bir Gün Özlersin","Emre Aydın",0.19],["szNE0mZ2sRw","NKBİ X YAPAMAM","Güneş",1.55],["J7cy1biip_U","DUY BENİ","Göksel İpekçi",0.07],["WjGeH0BBrVs","Daha İyi","manifest",0.71],["kc5der03X8c","Beyler","Dolu Kadehi Ters Tut",0.12],["m0ZuZRUNcT8","Gidenin Dostu Olmaz","Gripin",0.36],["4MlZDSTUu5w","Amatör","manifest",0.57],["uld81rvTbFg","O Ben Olurum","Kalben",0.26],["8XDqeG047s4","O Zaman Da Sonbahardı","Pinhani",0.24],["B5hxuBypdBo","yok bi çare","TUANA",0.14],["o0uIFQsmS0I","Başrol Sensin","manifest",0.37],["9Pf3p1bn4tE","O Güzel Günler","TNK",0.3],["wVbvyKHfLVs","Rüzgar","Kalben",0.14],["JMuxp6w93i8","Beni Biraz Böyle Hatırla","Emre Aydın",0.32],["7APEkrsk7Mg","Doya Doya","Kalben",0.15],["kmwLour0wLQ","Yara","Kalben",0.14],["oz_r1BrZt1o","MECBURUM","Göksel İpekçi",0.05],["RkIdKzzF9J8","Düşünürüm","Kalben",0.93],["LtGiS0GIFDE","Yavru Ceylan","Pinhani",0.29],["CRUcIZahXVQ","Yad Eller","maNga",0.16],["cbigPAUgYo4","Sadece","Kalben",0.0],["jpnlAKDj0eY","Beş","Gripin",0.34],["MaRBSebx3aE","Can Dostum","Emir Can İğrek",0.22],["ipnDat9a2Dc","Filozof","Dolu Kadehi Ters Tut",0.0],["hJlNn1efqq8","Halledemedik","Kendimden Hallice",0.66],["FsGl5JefvJs","Zamanın Dışında, Boşluğun İçinde","Birileri",0.0],["YKO78iqqtDE","KTS","manifest",0.86],["Wi7yByBkzvM","Bir Pazar Kahvaltısı","Emre Aydın",0.06],["G2n0swbmORA","Tehlikeli İkilem","Dolu Kadehi Ters Tut",0.83],["w8ttdarYt0E","İstanbul","Sertab Erener",0.13],["5CQp2fVDMJA","Anason","Zakkum",0.12],["JrSd0Bm8uu8","Neden Bu Elveda","Gripin",0.54],["WhXDv1qyt8c","bi kere öpse bükülür uzay","TUANA",0.9],["6YmRQqxYauk","Adı İntikamdı","Afra",0.94],["1H7CBGIumNI","Saçlar","Kalben",0.06],["cRHBKik2kvI","Nehirler Durmaz","Pinhani",1.48],["PauIcvh7cfY","Snap","manifest",0.53],["2Xw-W9h-l0g","Zamansızdık","manifest",0.75],["10UVCijc96s","RÜYA","manifest",0.64],["N2WchAwoIR8","Manifest","manifest",0.53],["-Ti_L7lG_io","Arıyo","manifest",0.0],["B42fXNlLxvQ","Yaşanacaksa","manifest",0.65],["nRD6KzZqDzM","Zehir","manifest",0.49],["W-R5VxYQ9-Q","Rampapapam","manifest",0.48],["Ykch34xeNCU","Hayır","manifest",0.55],["OiTlcpUtY7I","Durma","manifest",0.69],["p8TIJ3FNxYw","Intro","manifest",0.82],["NI0ZKSQSQq0","Gelme Aklıma","Dolu Kadehi Ters Tut",0.29],["8n8jBD5tMGI","Olabilirdik","Dolu Kadehi Ters Tut",0.17],["X9ZhRJb5K3o","FARKINDA DEĞİLDİN","Selin",0.38],["U8CEBxTDPto","Sakinleştim","Pinhani",1.21],["CwkaXj46Ybs","Islansın","Dolu Kadehi Ters Tut",1.71],["c32pRybrzyU","Kaybediyorum Yeniden","Yaşlı Amca",2.3],["fmGFdWc0vzY","Dilerim Ki","Dolu Kadehi Ters Tut",0.99],["Y0rwJzTM66A","İkimizden Biri","Fatma Turgut",0.16],["GknFhS1Xdkc","Düşünürsem Ölürüm","Sena Şener",0.0],["gvqMapZ-WvY","Ben Nası Büyük Adam Olucam","Pinhani",0.21],["4q4zUo62AsQ","Şeker Prens ve Tuz Kral","Cem Adrian",1.09],["aDJPUInLZTE","Kimse Görmesin Seni","Pinhani",0.32],["hombgDllnJQ","İçimde Bir Sıkıntı","Dolu Kadehi Ters Tut",3.46],["0eAT2ZWIydk","Kalbim Seni Arıyor","Yedinci Ev",0.0],["90Mq7vf1J0A","Yalnız","Şebnem Ferah",0.66],["Jxw5f82IeDU","Yalnız Kuş","Göksel",0.45],["yTrXXyreGRQ","Sevilmemişim","Nasıl Derler Bilirsin",0.57],["m5H1M8lZRTU","Durma Yağmur Durma","Gripin",0.39],["HfGrFNACSK8","Hayalet Sevgilim","İrem Yağcı Aydın",0.16],["Mq0x21H6KpI","Oyunbozan","mor ve ötesi",0.16],["IAlkGGb6dSk","Ve Ben","Yaşlı Amca",0.0]];
+const SURELER = [1, 2, 4, 7, 11, 16], PUANLAR = [100, 80, 60, 40, 25, 10], TOPLAM = 16;
+const S = SARKILAR.map(([id, ad, sanatci, bas]) => ({ id, ad, sanatci, bas }));
+const BIL = new Map(S.map(s => [s.id, s]));
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const depoOku = (k, v) => { try { const x = JSON.parse(localStorage.getItem(k)); return x ?? v; } catch (e) { return v; } };
+const depoYaz = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+// Türkçe harfsiz yazılanı da bulsun: "sarildim" → "Sarıldım"
+const sade = s => s.toLocaleLowerCase("tr").replace(/[çğıöşüâîû]/g, c => ({ ç: "c", ğ: "g", ı: "i", ö: "o", ş: "s", ü: "u", â: "a", î: "i", û: "u" })[c]).replace(/[^a-z0-9]+/g, " ").trim();
+
+let skor = Object.assign({ tur: 0, puan: 0, seri: 0, enSeri: 0 }, depoOku("in-skor", {}));
+let sira = depoOku("in-sira", []);
+if (!Array.isArray(sira)) sira = [];
+sira = sira.filter(id => BIL.has(id));
+let T = null, adim = 0, denemeler = [], bitti = false;
+
+function karistir(L) { L = [...L]; for (let i = L.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [L[i], L[j]] = [L[j], L[i]]; } return L; }
+// Sıradaki şarkı: liste karışık sırayla biter, bitince yeniden karışır; bozuk (oynamayan) videolar atlanır
+function siradaki(atla) {
+  for (let i = 0; i <= S.length * 2; i++) {
+    if (!sira.length) sira = karistir(S.map(s => s.id).filter(id => id !== T?.id || S.length === 1));
+    const id = sira.pop();
+    depoYaz("in-sira", sira);
+    if (!atla.has(id)) return BIL.get(id);
+  }
+  return S[0];
+}
+
+// ---- YouTube oynatıcısı: şarkının girişinden (bas) en çok izin verilen saniye kadar çalar, sonra durur
+let player = null, hazir = false, caliyor = false, izle = 0;
+const bozuk = new Set();
+window.onYouTubeIframeAPIReady = () => {
+  player = new YT.Player("oynatici", {
+    width: "100%", height: "100%",
+    playerVars: { playsinline: 1, controls: 0, disablekb: 1, rel: 0, iv_load_policy: 3, fs: 0, origin: location.origin },
+    events: {
+      onReady: () => { hazir = true; if (T) yukle(); durumYaz(); },
+      onStateChange: e => { if (e.data === YT.PlayerState.ENDED) dur(); },
+      onError: () => { if (T) bozuk.add(T.id); dur(); yeniTur(); },  // gömülemeyen ya da kalkmış video: sıradakine geç
+    },
+  });
+};
+function yukle() { if (hazir && T) player.cueVideoById({ videoId: T.id, startSeconds: T.bas }); }
+const izinli = () => bitti ? Infinity : SURELER[adim];
+function cal() {
+  if (!hazir || !T) return;
+  if (caliyor) return dur();
+  player.unMute(); player.setVolume(100);
+  player.seekTo(T.bas, true); player.playVideo();
+  caliyor = true; calYaz();
+  clearInterval(izle); izle = setInterval(takip, 30);
+}
+function takip() {
+  const t = Math.max(0, (player.getCurrentTime?.() || T.bas) - T.bas);
+  $("calan").style.width = Math.min(100, t / TOPLAM * 100) + "%";
+  if (t >= izinli()) dur();
+}
+function dur() {
+  clearInterval(izle);
+  if (caliyor && player?.pauseVideo) player.pauseVideo();
+  caliyor = false; calYaz();
+  if (!bitti) $("calan").style.width = "0%";
+}
+function calYaz() {
+  $("cal").classList.toggle("caliyor", caliyor); $("plak").classList.toggle("doner", caliyor);
+  $("cal").setAttribute("aria-label", caliyor ? "Durdur" : "Çal");
+}
+function durumYaz() {
+  $("durum").textContent = hazir ? "" : window.YT ? "Oynatıcı yükleniyor…" : "YouTube oynatıcısı yüklenemedi; interneti kontrol edip sayfayı yenile.";
+  $("durum").hidden = !$("durum").textContent;
+}
+
+// ---- Tur
+function yeniTur() {
+  dur();
+  T = siradaki(bozuk); adim = 0; denemeler = []; bitti = false;
+  $("sahne").classList.remove("acik");
+  $("tahmin").value = ""; oneriKapat(); $("hata").textContent = "";
+  yukle(); ciz();
+}
+function ciz() {
+  const u = izinli();
+  $("acilan").style.width = (bitti ? 100 : u / TOPLAM * 100) + "%";
+  if (!caliyor) $("calan").style.width = "0%";
+  $("sureYazi").innerHTML = bitti ? "Şarkı baştan çalıyor" : `<b>${u} sn</b> dinleyebilirsin`;
+  $("pas").textContent = adim < 5 ? `Pas (+${SURELER[adim + 1] - u} sn)` : "Pes et";
+  $("form").hidden = bitti; $("sonuc").hidden = !bitti;
+  $("denemeler").innerHTML = Array.from({ length: 6 }, (_, i) => {
+    const d = denemeler[i];
+    if (!d) return `<li><span class="im">${i + 1}</span><span></span></li>`;
+    const [sinif, im, yazi] = d.tip === "pas" ? ["pas", "⤼", "Pas"] : d.tip === "dogru" ? ["dogru", "✓", d.yazi]
+      : d.tip === "sanatci" ? ["sanatci", "≈", d.yazi + " · sanatçı doğru"] : ["yanlis", "✕", d.yazi];
+    return `<li class="${sinif}"><span class="im">${im}</span><span>${esc(yazi)}</span></li>`;
+  }).join("");
+  $("sTur").textContent = skor.tur; $("sPuan").textContent = skor.puan; $("sSeri").textContent = skor.seri;
+}
+const etiket = s => `${s.ad} — ${s.sanatci}`;
+function tahmin(s) {
+  if (bitti || !T) return;
+  if (!s) { $("hata").textContent = "Listeden bir şarkı seç."; return; }
+  $("hata").textContent = ""; $("tahmin").value = ""; oneriKapat();
+  if (s.id === T.id || (sade(s.ad) === sade(T.ad) && sade(s.sanatci) === sade(T.sanatci))) return bitir(true, s);
+  denemeler.push({ tip: sade(s.sanatci) === sade(T.sanatci) ? "sanatci" : "yanlis", yazi: etiket(s) });
+  ilerle();
+}
+function pas() { if (bitti || !T) return; denemeler.push({ tip: "pas" }); ilerle(); }
+function ilerle() {
+  if (adim >= 5) return bitir(false);
+  adim += 1; ciz();
+  dur(); cal();  // uzayan kısmı hemen çal
+}
+function bitir(dogru, s) {
+  if (dogru) denemeler.push({ tip: "dogru", yazi: etiket(s) });
+  bitti = true;
+  const p = dogru ? PUANLAR[adim] : 0;
+  skor.tur += 1; skor.puan += p; skor.seri = dogru ? skor.seri + 1 : 0; skor.enSeri = Math.max(skor.enSeri, skor.seri);
+  depoYaz("in-skor", skor);
+  $("karar").className = "cip " + (dogru ? "iyi" : "kotu");
+  $("karar").textContent = dogru ? (adim === 0 ? "İlk notada bildin!" : `${SURELER[adim]} saniyede bildin`) : "Bu sefer olmadı";
+  $("sAd").textContent = T.ad; $("sSanatci").textContent = T.sanatci;
+  $("puan").textContent = `+${p} puan`;
+  $("sahne").classList.add("acik");
+  ciz();
+  dur(); cal();  // bitti: video görünür, şarkı girişten itibaren sonuna kadar çalar
+}
+
+// ---- Öneri listesi: yazdıkça şarkı adı + sanatçıya göre süzer (en çok 8), ok tuşları ve dokunma ile seçilir
+let oneriler = [], secili = -1;
+function oneriYaz() {
+  const q = sade($("tahmin").value);
+  if (!q) return oneriKapat();
+  const k = q.split(" ");
+  oneriler = S.filter(s => { const m = sade(s.ad + " " + s.sanatci); return k.every(x => m.includes(x)); })
+    .sort((a, b) => (sade(b.ad).startsWith(q) - sade(a.ad).startsWith(q)) || a.ad.localeCompare(b.ad, "tr")).slice(0, 8);
+  secili = oneriler.length ? 0 : -1;
+  $("oneri").innerHTML = oneriler.length ? oneriler.map((s, i) => `<li role="option" data-i="${i}" aria-selected="${i === secili}">${esc(s.ad)}<span>${esc(s.sanatci)}</span></li>`).join("")
+    : `<li class="yok">Listede böyle bir şarkı yok</li>`;
+  $("oneri").hidden = false; $("tahmin").setAttribute("aria-expanded", "true");
+}
+function oneriKapat() { oneriler = []; secili = -1; $("oneri").hidden = true; $("tahmin").setAttribute("aria-expanded", "false"); }
+function seciliYaz() { [...$("oneri").children].forEach((li, i) => li.setAttribute("aria-selected", String(i === secili))); }
+// Yazılan metin bir şarkının adıyla birebir aynıysa (ya da "ad — sanatçı") onu kabul et
+function yazilanSarki() {
+  const q = sade($("tahmin").value);
+  if (!q) return null;
+  const L = S.filter(s => sade(s.ad) === q || sade(etiket(s)) === q);
+  return L.length === 1 ? L[0] : null;
+}
+
+$("cal").addEventListener("click", cal);
+$("pas").addEventListener("click", pas);
+$("sonraki").addEventListener("click", () => yeniTur());
+$("tahmin").addEventListener("input", oneriYaz);
+$("tahmin").addEventListener("focus", () => { if (matchMedia("(max-width: 600px)").matches) $("form").scrollIntoView({ block: "start", behavior: "smooth" }); });
+$("tahmin").addEventListener("keydown", e => {
+  if ($("oneri").hidden || !oneriler.length) return;
+  if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); secili = (secili + (e.key === "ArrowDown" ? 1 : -1) + oneriler.length) % oneriler.length; seciliYaz(); }
+  if (e.key === "Escape") oneriKapat();
+});
+$("oneri").addEventListener("pointerdown", e => { const li = e.target.closest("li[data-i]"); if (li) { e.preventDefault(); tahmin(oneriler[+li.dataset.i]); } });
+$("tahmin").addEventListener("blur", () => setTimeout(oneriKapat, 150));
+$("form").addEventListener("submit", e => {
+  e.preventDefault();
+  tahmin(!$("oneri").hidden && secili >= 0 ? oneriler[secili] : yazilanSarki());
+});
+
+$("sarkiSay").textContent = S.length;
+yeniTur();
+setTimeout(durumYaz, 8000);  // 8 sn'de oynatıcı gelmediyse uyarı
+</script>
+<script src="https://www.youtube.com/iframe_api"></script>
+</body>
+</html>
