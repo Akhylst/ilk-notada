@@ -153,7 +153,50 @@ body:not([data-mod="hiz"]) .hizli, body[data-mod="hiz"] #denemeler { display: no
 .hizAlan .azKaldi b { color: var(--kirmizi); }
 .hizSon { grid-column: 1 / -1; margin: 0; min-height: 1.4em; font-weight: 600; color: var(--soluk); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sonuc .denemeler { justify-self: stretch; text-align: left; }
-@media (prefers-reduced-motion: reduce) { .plak.doner { animation: none; } .ortu, .serit .acilan, button { transition: none; } }
+.albumNot { padding: 5px 14px; border-radius: 999px; background: var(--amber-y); color: var(--amber); font-weight: 700; font-size: .88rem; }
+.albumNot:empty { display: none; }
+/* Albüm ve İstatistik: kartın altında iki düğme, tam ekrana yakın panel (dialog) */
+.altDugmeler { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.altDugmeler button { background: var(--kart); color: var(--murekkep); border: 1px solid var(--cizgi); box-shadow: var(--golge); border-radius: 16px; min-height: 54px; font-weight: 700; }
+.altDugmeler small { display: block; font-size: .74rem; font-weight: 600; color: var(--soluk); }
+dialog.panel { width: min(560px, calc(100vw - 20px)); max-height: calc(100dvh - 20px); margin: auto; padding: 0; border: 0; border-radius: 22px; background: var(--zemin); color: var(--murekkep); box-shadow: 0 20px 60px rgba(0, 0, 0, .4); overflow: hidden; }
+dialog.panel[open] { display: flex; flex-direction: column; }
+dialog.panel::backdrop { background: rgba(20, 12, 32, .5); }
+.panelUst { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 16px; background: var(--kart); border-bottom: 1px solid var(--cizgi); }
+.panelUst h2 { margin: 0; font: 800 1.1rem/1.2 var(--fb); }
+.panelUst p { margin: 2px 0 0; font-size: .82rem; color: var(--soluk); font-weight: 600; }
+.kapat { min-height: 40px; width: 40px; padding: 0; border-radius: 50%; background: var(--kart-2); color: var(--murekkep); font-size: 1.1rem; }
+.panelIc { overflow-y: auto; overscroll-behavior: contain; padding: 16px; display: grid; gap: 14px; }
+.albumGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 16px 8px; }
+.stk { position: relative; display: grid; justify-items: center; gap: 6px; padding: 0; min-height: 0; background: none; border: 0; border-radius: 12px; color: var(--murekkep);
+  font: 600 .7rem/1.2 var(--f); text-align: center; }
+.stk .resim { position: relative; width: 72px; height: 72px; border-radius: 50%; overflow: hidden; border: 4px solid #fff; rotate: var(--r, 0deg);
+  box-shadow: 0 0 0 3px var(--halka, transparent), 0 6px 12px rgba(40, 20, 60, .3); background: var(--kart-2); }
+.stk img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.stk .rozet { position: absolute; left: calc(50% + 16px); top: 50px; font-size: 1.15rem; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .3)); }
+.stk .ad { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; max-width: 90px; }
+.stk.k1 { --halka: #cd7f32; } .stk.k2 { --halka: #b9c2cf; } .stk.k3 { --halka: #f2b705; }
+.stk.k3 .resim::after { content: ""; position: absolute; inset: 0; background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, .55) 50%, transparent 65%);
+  background-size: 250% 100%; animation: parilti 3.2s ease-in-out infinite; }
+@keyframes parilti { from { background-position: 130% 0; } to { background-position: -130% 0; } }
+.stk.yok .resim { border: 2px dashed var(--cizgi); box-shadow: none; display: grid; place-items: center; color: var(--soluk); font: 800 .9rem var(--fb); background: var(--kart); }
+.stk.yok .ad { color: var(--soluk); }
+.albumBilgi { position: sticky; bottom: 0; margin: 0; padding: 10px 14px; border-radius: 14px; background: var(--kart); border: 1px solid var(--cizgi); font-size: .88rem; font-weight: 600; text-align: center; }
+.albumBilgi:empty { display: none; }
+.ozet { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0; }
+.ozet div { padding: 10px 6px; border-radius: 14px; background: var(--kart); border: 1px solid var(--cizgi); text-align: center; }
+.ozet dt { font-size: .62rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--soluk); }
+.ozet dd { margin: 2px 0 0; font: 800 1.15rem/1.3 var(--fb); font-variant-numeric: tabular-nums; }
+.istatBolum { padding: 12px 14px; border-radius: 16px; background: var(--kart); border: 1px solid var(--cizgi); }
+.istatBolum h3 { margin: 0 0 8px; font-size: .95rem; }
+.istatBolum table { width: 100%; border-collapse: collapse; font-size: .86rem; font-variant-numeric: tabular-nums; }
+.istatBolum th, .istatBolum td { padding: 6px 4px; text-align: right; border-top: 1px solid var(--cizgi); }
+.istatBolum th { color: var(--soluk); font-size: .72rem; font-weight: 700; border-top: 0; }
+.istatBolum th:first-child, .istatBolum td:first-child { text-align: left; }
+.istatBolum ol { margin: 0; padding-left: 1.3em; display: grid; gap: 5px; font-size: .88rem; }
+.istatBolum ol span { color: var(--soluk); }
+.istatBolum p { margin: 0; font-size: .86rem; color: var(--soluk); }
+@media (prefers-reduced-motion: reduce) { .plak.doner, .stk.k3 .resim::after { animation: none; } .ortu, .serit .acilan, button { transition: none; } }
 </style>
 </head>
 <body>
@@ -237,10 +280,24 @@ body:not([data-mod="hiz"]) .hizli, body[data-mod="hiz"] #denemeler { display: no
       <p class="sanatciAd" id="sSanatci"></p>
       <p class="puan" id="puan"></p>
       <p class="etk kediNot" id="kediNot"></p>
+      <p class="albumNot" id="albumNot"></p>
       <ol class="denemeler hizli" id="hizListe" aria-label="Bu turun şarkıları"></ol>
       <button type="button" class="ana" id="sonraki">Sonraki şarkı</button>
     </section>
   </main>
+
+  <div class="altDugmeler">
+    <button type="button" id="albumAc">🗂 Sticker albümü<small id="albumSay">0</small></button>
+    <button type="button" id="istatAc">📊 İstatistik<small>sanatçılar, zorlar</small></button>
+  </div>
+  <dialog class="panel" id="albumPanel" aria-labelledby="albumBaslik">
+    <div class="panelUst"><div><h2 id="albumBaslik">🗂 Sticker albümü</h2><p id="albumOzet"></p></div><button type="button" class="kapat" aria-label="Kapat">✕</button></div>
+    <div class="panelIc"><div class="albumGrid" id="albumGrid"></div><p class="albumBilgi" id="albumBilgi" aria-live="polite"></p></div>
+  </dialog>
+  <dialog class="panel" id="istatPanel" aria-labelledby="istatBaslik">
+    <div class="panelUst"><div><h2 id="istatBaslik">📊 İstatistik</h2><p>Bu telefonda oynadıkların</p></div><button type="button" class="kapat" aria-label="Kapat">✕</button></div>
+    <div class="panelIc" id="istatIc"></div>
+  </dialog>
 
   <details>
     <span class="st" aria-hidden="true" style="--b:1.6rem;--r:14deg;top:-12px;right:10px">🐶</span>
@@ -249,6 +306,7 @@ body:not([data-mod="hiz"]) .hizli, body[data-mod="hiz"] #denemeler { display: no
     <p><b>Sözsüz:</b> aynı oyun, ama şarkının sözsüz hali çalar: yalnız müzik ve ritim.</p>
     <p><b>Söz:</b> şarkının adı ve sözlerinden bir parça yazar, bir kelime eksik; onu bul. Kutular harf sayısı kadar. Her yanlış ya da "Harf aç" bir harf açar; 4 hak, puan 100, 70, 40, 20. Kökü doğru yazarsan sarı yanar.</p>
     <p><b>⏱ Hız:</b> 60 saniyede bildiğin kadar şarkı. Plağa dokununca süre başlar; kesitin tamamını dinleyebilirsin. Bildiğin an sıradaki çalar, "Pas" ile geçersin. En iyi skorun rekor olarak saklanır.</p>
+    <p><b>🗂 Albüm:</b> bildiğin her şarkı sticker olur. Dinle/Sözsüz'de 1-2 sn'de bilirsen altın, 4-7 sn'de gümüş, daha geç bronz; Söz'de ilk denemede altın; Hız'da gümüş. Zor modda bir kademe yukarı. Daha iyi bilirsen sticker'ın yükselir.</p>
     <p><b>🔥 Zor:</b> Dinle ve Sözsüz'de giriş hiç çıkmaz, süreler 0,5 · 1 · 2 · 3 · 5 · 8 saniye, sanatçı ipucu yok. Söz'de şarkının adı bitene kadar gizli, kök ipucu yok. Zor modun puanı ayrı tutulur.</p>
   </details>
   <details>
@@ -376,7 +434,7 @@ function yukle() { if (ytHazir && T && (mod === "dinle" || mod === "sozsuz")) pl
 const HIZ_SURE = 60;
 let hz = { bas: 0, saat: 0, bulunan: [], gecilen: [] };
 function hizSifirla() {
-  clearInterval(hz.saat); hz = { bas: 0, saat: 0, bulunan: [], gecilen: [] };
+  clearInterval(hz.saat); hz = { bas: 0, saat: 0, bulunan: [], gecilen: [], yeni: 0 };
   $("hizSay").textContent = 0; $("hizSon").textContent = ""; $("hizListe").innerHTML = ""; hizTik();
 }
 const hizKalan = () => hz.bas ? Math.max(0, HIZ_SURE - (Date.now() - hz.bas) / 1000) : HIZ_SURE;
@@ -388,6 +446,7 @@ function hizTik() {
 }
 function hizSonraki(dogru) {
   (dogru ? hz.bulunan : hz.gecilen).push(T);
+  if (kaydet(T.id, dogru, -1)?.[0] === "yeni") hz.yeni++;
   $("hizSay").textContent = hz.bulunan.length; $("hizSon").textContent = (dogru ? "✓ " : "⤼ ") + etiket(T);
   dur(); T = siradaki(); kesitSec(); ciz(); cal();
 }
@@ -399,6 +458,7 @@ function hizBitir() {
   $("karar").className = "cip iyi"; $("karar").textContent = "Süre doldu ⏱";
   $("sAd").textContent = `${n} şarkı bildin`; $("sSanatci").textContent = rekor ? "Yeni rekor! 🎉" : `Rekorun: ${skor.puan}`;
   $("puan").textContent = "";
+  $("albumNot").textContent = hz.yeni ? `Albüme ${hz.yeni} yeni sticker 🌟` : "";
   $("kediNot").textContent = n ? `${rastgele(KEDILER)} onayladı 🐾` : `${rastgele(KEDILER)} de bilemedi 😿`;
   $("hizListe").innerHTML = [...hz.bulunan.map(s => ["dogru", "✓", s]), ...hz.gecilen.map(s => ["pas", "⤼", s])]
     .map(([c, im, s]) => `<li class="${c}"><span class="im">${im}</span><span>${esc(etiket(s))}</span></li>`).join("");
@@ -433,6 +493,77 @@ function sozTahmin() {
   if (a === b) return bitir(true);
   denemeler.push({ tip: !zor && b.length >= 3 && (a.startsWith(b) || b.startsWith(a)) ? "sanatci" : "yanlis", yazi: g });
   ilerle();
+}
+
+// ---- Kayıt (24 Kas): her tur [zaman sn, mod, zor 0/1, şarkı, doğru 0/1, adım (Hız'da −1)], son 4000 → İstatistik; albüm {şarkı: 1 bronz | 2 gümüş | 3 altın}
+const ALBUM = "in-album", GECMIS = "in-gecmis", KADEME = ["", "🥉 Bronz", "🥈 Gümüş", "🥇 Altın"], ROZET = ["", "🥉", "🥈", "🥇"];
+const gecmis = () => { const g = depoOku(GECMIS, []); return Array.isArray(g) ? g : []; };
+const album = () => { const a = depoOku(ALBUM, {}); return a && typeof a === "object" ? a : {}; };
+// Doğruysa sticker kademesi; yeni ya da yükseldiyse [durum, kademe] döner
+function kaydet(id, dogru, a) {
+  const L = gecmis();
+  L.push([Math.round(Date.now() / 1000), mod, zor ? 1 : 0, id, dogru ? 1 : 0, a]);
+  if (L.length > 4000) L.splice(0, L.length - 4000);
+  depoYaz(GECMIS, L);
+  if (!dogru) return null;
+  const k = Math.min(3, (mod === "hiz" ? 2 : mod === "soz" ? (a === 0 ? 3 : a <= 2 ? 2 : 1) : a <= 1 ? 3 : a <= 3 ? 2 : 1) + (zor ? 1 : 0));
+  const al = album(), once = al[id] || 0;
+  if (k <= once) return null;
+  al[id] = k; depoYaz(ALBUM, al); albumSayYaz();
+  return [once ? "yukseldi" : "yeni", k];
+}
+const ALBUM_SIRA = [...S].sort((a, b) => a.ad.localeCompare(b.ad, "tr"));  // albümde sabit yerler, ada göre
+function albumSayYaz() { const al = album(); $("albumSay").textContent = `${ALBUM_SIRA.filter(s => al[s.id]).length} / ${S.length} toplandı`; }
+function albumCiz() {
+  const al = album(), say = [0, 0, 0, 0];
+  $("albumGrid").innerHTML = ALBUM_SIRA.map((s, i) => {
+    const k = al[s.id] || 0; say[k]++;
+    const r = `--r:${(i * 37) % 13 - 6}deg`;
+    return k ? `<button type="button" class="stk k${k}" data-id="${s.id}" style="${r}"><span class="resim"><img src="https://i.ytimg.com/vi/${s.id}/mqdefault.jpg" alt="" loading="lazy"></span><span class="rozet">${ROZET[k]}</span><span class="ad">${esc(s.ad)}</span></button>`
+      : `<div class="stk yok" style="${r}"><span class="resim">${i + 1}</span><span class="ad">?</span></div>`;
+  }).join("");
+  const n = say[1] + say[2] + say[3];
+  $("albumOzet").textContent = `${n} / ${S.length} · 🥇 ${say[3]} · 🥈 ${say[2]} · 🥉 ${say[1]}`;
+  $("albumBilgi").textContent = n ? "Bir sticker'a dokun" : "Henüz boş: bildiğin şarkılar burada sticker olacak 🐾";
+}
+function albumBilgi(id) {
+  const s = BIL.get(id), k = album()[id], kez = gecmis().filter(x => x[3] === id && x[4]).length;
+  $("albumBilgi").textContent = `${etiket(s)} · ${KADEME[k]}${kez ? ` · ${kez} kez bildin` : ""}`;
+}
+// İstatistik: özet skor kayıtlarından (eski turlar dahil), ayrıntılar geçmişten
+const MOD_AD = { dinle: "🎧 Dinle", sozsuz: "🎹 Sözsüz", soz: "📝 Söz", hiz: "⏱ Hız" };
+function istatCiz() {
+  const sk = k => depoOku(k, {}) || {}, L = gecmis(), al = album();
+  const normal = ["in-skor", "in-skor-sozsuz", "in-skor-soz"].flatMap(k => [sk(k), sk(k + "-zor")]);
+  const tur = normal.reduce((t, x) => t + (x.tur || 0), 0), puan = normal.reduce((t, x) => t + (x.puan || 0), 0);
+  const enSeri = Math.max(0, ...normal.map(x => x.enSeri || 0)), hizRekor = Math.max(sk("in-skor-hiz").puan || 0, sk("in-skor-hiz-zor").puan || 0);
+  const bilinen = L.filter(x => x[4]), ilkNota = bilinen.filter(x => x[5] === 0 && (x[1] === "dinle" || x[1] === "sozsuz")).length;
+  const yuzde = (a, b) => b ? Math.round(100 * a / b) + "%" : "—";
+  const kutu = (dt, dd) => `<div><dt>${dt}</dt><dd>${dd}</dd></div>`;
+  let h = `<dl class="ozet">${kutu("Tur", tur)}${kutu("Puan", puan)}${kutu("En uzun seri", enSeri)}${kutu("İlk notada", ilkNota)}${kutu("Hız rekoru", hizRekor)}${kutu("Albüm", Object.keys(al).filter(id => BIL.has(id)).length)}</dl>`;
+  if (!L.length) return $("istatIc").innerHTML = h + `<section class="istatBolum"><p>Ayrıntılar bugünden itibaren tutuluyor; birkaç tur oyna, burada görünür 🐾</p></section>`;
+  // modlara göre
+  const gruplar = new Map();
+  for (const x of L) { const k = x[1] + (x[2] ? "-zor" : ""); if (!gruplar.has(k)) gruplar.set(k, []); gruplar.get(k).push(x); }
+  const satir = [...gruplar].map(([k, G]) => {
+    const [m, z] = k.split("-"), D = G.filter(x => x[4]), ad = MOD_AD[m] + (z ? " 🔥" : "");
+    const ort = !D.length || m === "hiz" ? "—" : m === "soz" ? sn((D.reduce((t, x) => t + x[5] + 1, 0) / D.length).toFixed(1)) + " deneme"
+      : sn((D.reduce((t, x) => t + (z ? SURELER_ZOR : SURELER)[x[5]], 0) / D.length).toFixed(1)) + " sn";
+    return `<tr><td>${ad}</td><td>${G.length}</td><td>${yuzde(D.length, G.length)}</td><td>${ort}</td></tr>`;
+  }).join("");
+  h += `<section class="istatBolum"><h3>Modlara göre</h3><table><tr><th>Mod</th><th>Şarkı</th><th>Doğru</th><th>Ortalama</th></tr>${satir}</table></section>`;
+  // sanatçılar (en az 2 şarkı oynanmış), zorlayan şarkılar (bilemediği)
+  const san = new Map(), zorlar = new Map();
+  for (const x of L) {
+    const s = BIL.get(x[3]); if (!s) continue;
+    const a = san.get(s.sanatci) || [0, 0]; a[0]++; a[1] += x[4]; san.set(s.sanatci, a);
+    if (!x[4]) zorlar.set(s.id, (zorlar.get(s.id) || 0) + 1);
+  }
+  const iyi = [...san].filter(([, a]) => a[0] >= 2).sort((p, q) => q[1][1] / q[1][0] - p[1][1] / p[1][0] || q[1][0] - p[1][0]).slice(0, 5);
+  h += `<section class="istatBolum"><h3>En iyi bildiğin sanatçılar</h3>${iyi.length ? `<ol>${iyi.map(([n, a]) => `<li>${esc(n)} <span>· ${a[1]}/${a[0]} (${yuzde(a[1], a[0])})</span></li>`).join("")}</ol>` : "<p>Bir sanatçıdan en az 2 şarkı oynayınca çıkar.</p>"}</section>`;
+  const zl = [...zorlar].sort((p, q) => q[1] - p[1]).slice(0, 5);
+  h += `<section class="istatBolum"><h3>Seni en çok zorlayanlar</h3>${zl.length ? `<ol>${zl.map(([id, n]) => `<li>${esc(etiket(BIL.get(id)))} <span>· ${n} kez bilemedin</span></li>`).join("")}</ol>` : "<p>Henüz bilemediğin şarkı yok 🩺</p>"}</section>`;
+  $("istatIc").innerHTML = h + `<p style="margin:0;font-size:.78rem;color:var(--soluk);text-align:center">Ayrıntılar 24 Kasım'dan beri tutuluyor; özet eski turları da sayar.</p>`;
 }
 
 // ---- Tur
@@ -507,6 +638,8 @@ function bitir(dogru, s) {
   const p = dogru ? (soz ? PUAN_SOZ : PUANLAR)[adim] : 0;
   skor.tur += 1; skor.puan += p; skor.seri = dogru ? skor.seri + 1 : 0; skor.enSeri = Math.max(skor.enSeri, skor.seri);
   depoYaz(skorAnahtar(), skor);
+  const yeni = kaydet(T.id, dogru, adim);
+  $("albumNot").textContent = !yeni ? "" : yeni[0] === "yeni" ? `Albüme yeni sticker: ${KADEME[yeni[1]]} 🌟` : `Sticker'ın yükseldi: ${KADEME[yeni[1]]} ⬆`;
   $("karar").className = "cip " + (dogru ? "iyi" : "kotu");
   $("karar").textContent = !dogru ? "Teşhis konamadı 🙈" : soz ? (adim === 0 ? "İlk denemede teşhis! 🩺" : `Teşhis ${adim + 1}. denemede konuldu 🩺`)
     : adim === 0 ? "İlk notada teşhis! 🩺" : `Teşhis ${sn(sureler()[adim])} saniyede konuldu 🩺`;
@@ -580,7 +713,16 @@ $("zor").addEventListener("click", () => modSec(mod, !zor));
 $("zIpucu").addEventListener("click", pas);
 $("zForm").addEventListener("submit", e => { e.preventDefault(); sozTahmin(); });
 
+// Albüm / İstatistik panelleri: dokununca açılır, ✕ ya da dışına dokununca kapanır
+$("albumAc").addEventListener("click", () => { albumCiz(); $("albumPanel").showModal(); });
+$("istatAc").addEventListener("click", () => { istatCiz(); $("istatPanel").showModal(); });
+for (const d of document.querySelectorAll("dialog.panel")) {
+  d.addEventListener("click", e => { if (e.target === d || e.target.closest(".kapat")) d.close(); });
+}
+$("albumGrid").addEventListener("click", e => { const b = e.target.closest(".stk[data-id]"); if (b) albumBilgi(b.dataset.id); });
+
 $("sarkiSay").textContent = S.length;
+albumSayYaz();
 modSec(mod);
 </script>
 <script src="https://www.youtube.com/iframe_api"></script>
