@@ -13,7 +13,7 @@
 <meta name="theme-color" content="#0f0c15" media="(prefers-color-scheme: dark)">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;800&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;800&family=Inter:wght@400;500;600;700&family=Caveat:wght@600;700&display=swap">
 <style>
 /* Plak tezgâhı: ortada dönen plak (altında YouTube oynatıcısı, bilinene kadar kapalı), altında Heardle tarzı 16 saniyelik şerit (1-2-4-7-11-16),
    tahmin kutusu ve 6 deneme satırı. Telefon öncelikli tek sütun, en çok 560px. Pembe vurgu, mor ikincil; başlık Unbounded, metin Inter */
@@ -24,6 +24,7 @@
   --plak: #17131f; --plak-oluk: #2b2536;
   --yesil: #11815c; --yesil-y: #d9f3e8; --amber: #8f5b00; --amber-y: #f9ecd0; --kirmizi: #c0344b; --kirmizi-y: #fbe2e6;
   --golge: 0 1px 2px rgba(27, 22, 38, .06), 0 10px 28px -14px rgba(27, 22, 38, .3);
+  --kagit: #fffdf7; --defter-cizgi: #cfd9ee; --kenar-cizgi: #f3a5b9; --murekkep-defter: #27306f; --fosfor: rgba(255, 228, 0, .55); --nokta: rgba(109, 79, 230, .14);
   --f: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --fb: "Unbounded", "Inter", system-ui, sans-serif;
 }
@@ -35,6 +36,7 @@
     --plak: #08070b; --plak-oluk: #1f1a27;
     --yesil: #52d4a5; --yesil-y: #14352a; --amber: #f0b84c; --amber-y: #3a2d14; --kirmizi: #ff8094; --kirmizi-y: #3d1a21;
     --golge: 0 1px 2px rgba(0, 0, 0, .4), 0 12px 30px -14px rgba(0, 0, 0, .85); color-scheme: dark;
+    --kagit: #1c1724; --defter-cizgi: #352e47; --kenar-cizgi: #7a3550; --murekkep-defter: #ddd6f7; --fosfor: rgba(255, 214, 0, .26); --nokta: rgba(166, 143, 255, .13);
   }
 }
 *, *::before, *::after { box-sizing: border-box; }
@@ -62,6 +64,7 @@ h1 small { display: block; margin-top: 4px; font: 500 .72rem/1.2 var(--f); lette
 .ortu { position: absolute; inset: 0; cursor: pointer; display: grid; place-items: center; background: radial-gradient(70% 90% at 50% 50%, var(--mor-y), var(--kart-2));
   transition: opacity .6s ease, visibility .6s; }
 .sahne.acik .ortu { opacity: 0; visibility: hidden; }
+.ortu { grid-template: 100% / 100%; }  /* tek hücre sahne kadar: plak, kol ve halkanın % yüksekliği buna göre */
 .ortu > * { grid-area: 1 / 1; }
 .plak { height: 84%; width: auto; aspect-ratio: 1; border-radius: 50%; position: relative; box-shadow: 0 14px 30px -12px rgba(0, 0, 0, .6);
   background: repeating-radial-gradient(circle, var(--plak) 0 2px, var(--plak-oluk) 2.5px 3px), var(--plak); }
@@ -78,6 +81,27 @@ h1 small { display: block; margin-top: 4px; font: 500 .72rem/1.2 var(--f); lette
 .serit { position: relative; height: 14px; border-radius: 99px; background: var(--kart-2); border: 1px solid var(--cizgi); overflow: hidden; }
 .serit .acilan { position: absolute; inset: 0 auto 0 0; background: var(--mor-y); transition: width .4s ease; }
 .serit .calan { position: absolute; inset: 0 auto 0 0; background: var(--vurgu); width: 0; }
+.serit .bolmeler { position: absolute; inset: 0; z-index: 1; }
+.serit .bolme { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--kart); }
+/* Pikap kolu: plağın sağ üstünde; çalarken iğne plağa iner, durunca kalkar. Hız'da plağın çevresinde azalan süre halkası */
+.kol, .halka { width: auto; aspect-ratio: 1; overflow: visible; pointer-events: none; }
+.kol { height: 84%; z-index: 2; }
+.kol .govde { transform-box: view-box; transform-origin: 108px 8px; transform: rotate(-48deg); transition: transform .55s cubic-bezier(.3, .7, .3, 1); }
+.kol.inik .govde { transform: rotate(0deg); }
+.kol .ayak { fill: var(--kart); stroke: var(--cizgi); stroke-width: 1.5; }
+.kol .gobek, .kol .agirlik { fill: #8f88a1; }
+.kol .kolCizgi { fill: none; stroke: #aaa4b9; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.kol .kafa { fill: #6c657e; }
+.halka { height: 93%; rotate: -90deg; }
+.halka circle { fill: none; stroke-width: 2.4; }
+.halka .iz { stroke: var(--cizgi); }
+.halka .dolu { stroke: var(--vurgu); stroke-linecap: round; stroke-dasharray: 100; transition: stroke-dashoffset .1s linear; }
+.halka.azKaldi .dolu { stroke: var(--kirmizi); }
+.halka.azKaldi { animation: nabiz .5s ease-in-out infinite alternate; }
+@keyframes nabiz { to { scale: 1.035; } }
+/* Bilince plağın etiketi şarkının kapağına döner (1,6 sn sonra video açılır) */
+.plak.kapakli .etiket { background: radial-gradient(circle, var(--plak) 0 6%, transparent 6.5%), var(--kapak) center / cover; animation: kapakGel .5s cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes kapakGel { from { scale: .5; opacity: 0; } }
 .seritAlt { display: flex; justify-content: space-between; margin-top: -8px; font-size: .78rem; color: var(--soluk); font-variant-numeric: tabular-nums; }
 .seritAlt b { color: var(--murekkep); }
 /* Tahmin: öneri listesi kutunun altında açılır */
@@ -112,6 +136,10 @@ button:focus-visible, summary:focus-visible { outline: 2px solid var(--vurgu); o
 .denemeler .sanatci { border-style: solid; background: var(--amber-y); border-color: transparent; color: var(--amber); }
 .denemeler .pas { border-style: solid; background: var(--kart-2); border-color: transparent; }
 .denemeler .dogru { border-style: solid; background: var(--yesil-y); border-color: transparent; color: var(--yesil); font-weight: 700; }
+/* Kalan haklar tek satırda nokta: boş satırlar ekranı kaplamasın */
+.denemeler li.kalan { border: 0; min-height: 26px; padding: 2px 4px; gap: 7px; justify-content: center; font-size: .8rem; }
+.kalan .nokta { flex: none; width: 11px; height: 11px; border-radius: 50%; border: 1.5px dashed var(--soluk); opacity: .7; }
+.kalan .nokta.simdi { border-style: solid; border-color: var(--vurgu); background: var(--vurgu-y); opacity: 1; }
 .sonuc { display: grid; gap: 10px; text-align: center; justify-items: center; }
 .sonuc p { margin: 0; }
 .cip { font-weight: 700; border-radius: 999px; padding: 5px 14px; }
@@ -142,7 +170,14 @@ body[data-mod="soz"] .sesli, body:not([data-mod="soz"]) .sozlu { display: none !
 .sozBas { margin: 0; text-align: center; }
 .sozBas b { display: block; font: 800 1.15rem/1.25 var(--fb); letter-spacing: -.01em; }
 .sozBas span { color: var(--soluk); font-weight: 600; font-size: .9rem; }
-.sozler { position: relative; margin: 0; padding: 18px 14px; border-radius: 18px; background: var(--kart-2); font: 500 1.08rem/1.95 var(--f); text-align: center; text-wrap: balance; }
+/* Söz: çizgili defter kâğıdı, solda kırmızı kenar çizgisi, el yazısı (Caveat); her satır bir çizginin üstünde, boşluk fosforlu kalemle */
+.sozler { --s: 2.3rem; position: relative; margin: 0; padding: calc(var(--s) * .5) 16px calc(var(--s) * .5) 40px; border-radius: 6px 18px 18px 6px;
+  font: 600 1.55rem/var(--s) "Caveat", var(--f); color: var(--murekkep-defter); text-align: left; overflow-wrap: anywhere;
+  background: linear-gradient(90deg, transparent 27px, var(--kenar-cizgi) 27px 29px, transparent 29px),
+    linear-gradient(180deg, transparent calc(var(--s) - 1.5px), var(--defter-cizgi) 0) 0 calc(var(--s) * .5) / 100% var(--s) repeat-y, var(--kagit);
+  box-shadow: 0 1px 0 var(--cizgi), 0 10px 22px -14px rgba(27, 22, 38, .4); }
+.sozler .bos { padding: 0 5px; background: linear-gradient(180deg, transparent 50%, var(--fosfor) 50% 94%, transparent 94%); }
+.sozler .bos i { font-family: "Caveat", var(--f); font-weight: 700; color: var(--vurgu); border-bottom-color: var(--murekkep-defter); min-width: .55em; height: 1.15em; line-height: 1.15; }
 /* Boşluk: harf başına alt çizgili kutu; açılan harfler görünür, bitince kelime yeşil/kırmızı */
 .bos { display: inline-flex; gap: 3px; margin: 0 2px; vertical-align: -2px; }
 .bos i { min-width: .8em; height: 1.3em; border-bottom: 2.5px solid var(--vurgu); font: 800 1em/1.25 var(--f); color: var(--vurgu); text-align: center; }
@@ -176,7 +211,22 @@ dialog.panel::backdrop { background: rgba(20, 12, 32, .5); }
 .panelUst p { margin: 2px 0 0; font-size: .82rem; color: var(--soluk); font-weight: 600; }
 .kapat { min-height: 40px; width: 40px; padding: 0; border-radius: 50%; background: var(--kart-2); color: var(--murekkep); font-size: 1.1rem; }
 .panelIc { overflow-y: auto; overscroll-behavior: contain; padding: 16px; display: grid; gap: 14px; }
-.albumGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 16px 8px; }
+.albumGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 8px; }
+/* Albüm sayfası: noktalı krem kâğıt, üstte washi bant; 12 sticker; sayfa çevirince döner; yeni sticker damga gibi basılır */
+.sayfaKagit { position: relative; padding: 24px 10px 16px; border-radius: 8px 18px 18px 8px; touch-action: pan-y;
+  background: radial-gradient(circle, var(--nokta) 1px, transparent 1.6px) 0 0 / 16px 16px, var(--kagit);
+  box-shadow: inset 7px 0 12px -9px rgba(27, 22, 38, .35), 0 12px 26px -16px rgba(27, 22, 38, .5); }
+.sayfaKagit::before { content: ""; position: absolute; top: -9px; left: 50%; width: 92px; height: 22px; translate: -50% 0; rotate: -3deg; border-radius: 2px; opacity: .85;
+  background: repeating-linear-gradient(45deg, color-mix(in srgb, var(--vurgu) 50%, transparent) 0 6px, rgba(255, 255, 255, .55) 6px 12px); }
+.sayfaGez { display: flex; align-items: center; justify-content: center; gap: 14px; font-weight: 700; color: var(--soluk); font-variant-numeric: tabular-nums; }
+.sayfaGez button { min-height: 40px; width: 46px; padding: 0; font-size: 1.4rem; line-height: 1; }
+.sayfaGez button:disabled { opacity: .35; cursor: default; }
+.cevir-ileri { animation: cevirIleri .45s cubic-bezier(.3, .7, .3, 1); transform-origin: left center; }
+.cevir-geri { animation: cevirGeri .45s cubic-bezier(.3, .7, .3, 1); transform-origin: right center; }
+@keyframes cevirIleri { from { transform: perspective(1000px) rotateY(60deg); opacity: .15; } }
+@keyframes cevirGeri { from { transform: perspective(1000px) rotateY(-60deg); opacity: .15; } }
+.stk.yeni { animation: yapistir .6s cubic-bezier(.3, 1.6, .5, 1) both; }
+@keyframes yapistir { 0% { transform: scale(1.7) rotate(-14deg); opacity: 0; } 55% { opacity: 1; } 100% { transform: none; } }
 .stk { position: relative; display: grid; justify-items: center; gap: 6px; padding: 0; min-height: 0; background: none; border: 0; border-radius: 12px; color: var(--murekkep);
   font: 600 .7rem/1.2 var(--f); text-align: center; }
 .stk .resim { position: relative; width: 72px; height: 72px; border-radius: 50%; overflow: hidden; border: 4px solid #fff; rotate: var(--r, 0deg);
@@ -205,7 +255,8 @@ dialog.panel::backdrop { background: rgba(20, 12, 32, .5); }
 .istatBolum ol { margin: 0; padding-left: 1.3em; display: grid; gap: 5px; font-size: .88rem; }
 .istatBolum ol span { color: var(--soluk); }
 .istatBolum p { margin: 0; font-size: .86rem; color: var(--soluk); }
-@media (prefers-reduced-motion: reduce) { .plak.doner, .stk.k3 .resim::after { animation: none; } .ortu, .serit .acilan, button { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .plak.doner, .stk.k3 .resim::after, .stk.yeni, .halka.azKaldi, .cevir-ileri, .cevir-geri, .plak.kapakli .etiket { animation: none; }
+  .kol .govde, .halka .dolu { transition: none; } .ortu, .serit .acilan, button { transition: none; } }
 </style>
 </head>
 <body>
@@ -228,7 +279,7 @@ dialog.panel::backdrop { background: rgba(20, 12, 32, .5); }
   </nav>
 
   <main class="kart">
-    <span class="st etk" aria-hidden="true" style="--r:-7deg;top:-13px;left:12px">neredeyse Dr. 🩺</span>
+    <span class="st etk" aria-hidden="true" style="--r:-4deg;top:-5px;left:14px">neredeyse Dr. 🩺</span>
     <span class="st" aria-hidden="true" style="--b:2.7rem;--r:12deg;top:-24px;right:-10px">🐱</span>
     <span class="st" aria-hidden="true" style="--b:1.9rem;--r:-16deg;bottom:-14px;left:-10px">🐾</span>
     <span class="st" aria-hidden="true" style="--b:1.6rem;--r:18deg;bottom:-12px;right:22px">🦴</span>
@@ -241,13 +292,20 @@ dialog.panel::backdrop { background: rgba(20, 12, 32, .5); }
         <span class="st" aria-hidden="true" style="--b:1.4rem;--r:12deg;bottom:10px;right:14px">⭐</span>
         <span class="st" aria-hidden="true" style="--b:1.3rem;--r:8deg;bottom:12px;left:16px">🐰</span>
         <div class="plak" id="plak" aria-hidden="true"><span class="etiket"></span></div>
+        <svg class="kol" id="kol" viewBox="0 0 100 100" aria-hidden="true">
+          <circle class="ayak" cx="108" cy="8" r="9"/>
+          <g class="govde"><circle class="agirlik" cx="114" cy="3.5" r="4.5"/><path class="kolCizgi" d="M108 8 L85 25.5 L79.5 31"/>
+            <rect class="kafa" x="73.5" y="28.5" width="10" height="5.5" rx="1.6" transform="rotate(-42 78.5 31.25)"/></g>
+          <circle class="gobek" cx="108" cy="8" r="3.8"/>
+        </svg>
+        <svg class="halka hizli" id="halka" viewBox="0 0 100 100" aria-hidden="true"><circle class="iz" cx="50" cy="50" r="48.5"/><circle class="dolu" id="halkaDolu" cx="50" cy="50" r="48.5" pathLength="100"/></svg>
         <button type="button" class="calDug" id="cal" aria-label="Çal">
           <svg class="oyna" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
           <svg class="dur" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>
         </button>
       </div>
     </div>
-    <div class="serit sesli" id="serit" aria-hidden="true"><div class="acilan" id="acilan"></div><div class="calan" id="calan"></div></div>
+    <div class="serit sesli" id="serit" aria-hidden="true"><div class="acilan" id="acilan"></div><div class="calan" id="calan"></div><div class="bolmeler" id="bolmeler"></div></div>
     <div class="seritAlt sesli"><span id="sureYazi"><b>1 sn</b> dinleyebilirsin</span><span id="toplamYazi">16 sn</span></div>
     <audio id="kesit" preload="auto" playsinline></audio>
     <div class="hizAlan hizli" aria-live="polite">
@@ -301,7 +359,11 @@ dialog.panel::backdrop { background: rgba(20, 12, 32, .5); }
   </div>
   <dialog class="panel" id="albumPanel" aria-labelledby="albumBaslik">
     <div class="panelUst"><div><h2 id="albumBaslik">🗂 Sticker albümü</h2><p id="albumOzet"></p></div><button type="button" class="kapat" aria-label="Kapat">✕</button></div>
-    <div class="panelIc"><div class="albumGrid" id="albumGrid"></div><p class="albumBilgi" id="albumBilgi" aria-live="polite"></p></div>
+    <div class="panelIc">
+      <div class="sayfaKagit" id="albumSayfa"><div class="albumGrid" id="albumGrid"></div></div>
+      <div class="sayfaGez"><button type="button" class="ikinci" id="albumGeri" aria-label="Önceki sayfa">‹</button><span id="albumNo">1 / 1</span><button type="button" class="ikinci" id="albumIleri" aria-label="Sonraki sayfa">›</button></div>
+      <p class="albumBilgi" id="albumBilgi" aria-live="polite"></p>
+    </div>
   </dialog>
   <dialog class="panel" id="istatPanel" aria-labelledby="istatBaslik">
     <div class="panelUst"><div><h2 id="istatBaslik">📊 İstatistik</h2><p>Bu telefonda oynadıkların</p></div><button type="button" class="kapat" aria-label="Kapat">✕</button></div>
@@ -423,7 +485,7 @@ function dur() {
   if (!bitti) $("calan").style.width = "0%";
 }
 function calYaz() {
-  $("cal").classList.toggle("caliyor", caliyor); $("plak").classList.toggle("doner", caliyor);
+  $("cal").classList.toggle("caliyor", caliyor); $("plak").classList.toggle("doner", caliyor); $("kol").classList.toggle("inik", caliyor);
   $("cal").setAttribute("aria-label", caliyor ? "Durdur" : "Çal");
 }
 // YouTube: yalnız sonuçta; video görünür, şarkının tamamı için ona dokunulur (çalmaya başlayınca kesit susar)
@@ -452,6 +514,7 @@ function hizBasla() { if (mod !== "hiz" || hz.bas || bitti) return; hz.bas = Dat
 function hizTik() {
   const k = hizKalan();
   $("hizSaat").textContent = Math.ceil(k); $("hizSaatKutu").classList.toggle("azKaldi", hz.bas && k <= 10);
+  $("halkaDolu").style.strokeDashoffset = 100 * (1 - k / HIZ_SURE); $("halka").classList.toggle("azKaldi", !!hz.bas && k <= 10);
   if (hz.bas && k <= 0 && !bitti) hizBitir();
 }
 function hizSonraki(dogru) {
@@ -524,17 +587,51 @@ function kaydet(id, dogru, a) {
 }
 const ALBUM_SIRA = [...S].sort((a, b) => a.ad.localeCompare(b.ad, "tr"));  // albümde sabit yerler, ada göre
 function albumSayYaz() { const al = album(); $("albumSay").textContent = `${ALBUM_SIRA.filter(s => al[s.id]).length} / ${S.length} toplandı`; }
-function albumCiz() {
-  const al = album(), say = [0, 0, 0, 0];
-  $("albumGrid").innerHTML = ALBUM_SIRA.map((s, i) => {
-    const k = al[s.id] || 0; say[k]++;
-    const r = `--r:${(i * 37) % 13 - 6}deg`;
-    return k ? `<button type="button" class="stk k${k}" data-id="${s.id}" style="${r}"><span class="resim"><img src="https://i.ytimg.com/vi/${s.id}/mqdefault.jpg" alt="" loading="lazy"></span><span class="rozet">${ROZET[k]}</span><span class="ad">${esc(s.ad)}</span></button>`
-      : `<div class="stk yok" style="${r}"><span class="resim">${i + 1}</span><span class="ad">?</span></div>`;
+// Albüm sayfa sayfa (12'şer, numaralı yerler); son bakıştan beri gelen ya da yükselen sticker'lar (in-album-gor) damga gibi basılır, "pıt" sesiyle
+const SAYFA = 12, SAYFA_SAY = Math.ceil(ALBUM_SIRA.length / SAYFA);
+let albumSayfa = 0, sonKaydirma = 0, sesBag = null;
+function pit(n) {
+  try {
+    sesBag ??= new (window.AudioContext || window.webkitAudioContext)();
+    if (sesBag.state === "suspended") sesBag.resume();
+    for (let i = 0; i < Math.min(n, 5); i++) {
+      const t = sesBag.currentTime + 0.3 + i * 0.12, o = sesBag.createOscillator(), g = sesBag.createGain();
+      o.frequency.setValueAtTime(900, t); o.frequency.exponentialRampToValueAtTime(240, t + 0.09);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.08, t + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
+      o.connect(g).connect(sesBag.destination); o.start(t); o.stop(t + 0.14);
+    }
+  } catch (e) {}
+}
+function albumCiz(yon = 0) {
+  const al = album(), gor = depoOku("in-album-gor", {}) || {}, say = [0, 0, 0, 0];
+  for (const s of ALBUM_SIRA) say[al[s.id] || 0]++;
+  albumSayfa = Math.max(0, Math.min(SAYFA_SAY - 1, albumSayfa));
+  let yeni = 0;
+  $("albumGrid").innerHTML = ALBUM_SIRA.slice(albumSayfa * SAYFA, (albumSayfa + 1) * SAYFA).map((s, j) => {
+    const i = albumSayfa * SAYFA + j, k = al[s.id] || 0, r = `--r:${(i * 37) % 13 - 6}deg`;
+    if (!k) return `<div class="stk yok" style="${r}"><span class="resim">${i + 1}</span><span class="ad">?</span></div>`;
+    const taze = k > (gor[s.id] || 0), gec = taze ? `;animation-delay:${0.15 + yeni * 0.12}s` : "";
+    if (taze) { gor[s.id] = k; yeni++; }
+    return `<button type="button" class="stk k${k}${taze ? " yeni" : ""}" data-id="${s.id}" style="${r}${gec}"><span class="resim"><img src="https://i.ytimg.com/vi/${s.id}/mqdefault.jpg" alt="" loading="lazy"></span><span class="rozet">${ROZET[k]}</span><span class="ad">${esc(s.ad)}</span></button>`;
   }).join("");
+  depoYaz("in-album-gor", gor);
+  if (yon) { const el = $("albumSayfa"); el.classList.remove("cevir-ileri", "cevir-geri"); void el.offsetWidth; el.classList.add(yon > 0 ? "cevir-ileri" : "cevir-geri"); }
+  if (yeni && !hareketAz()) pit(yeni);
+  $("albumNo").textContent = `${albumSayfa + 1} / ${SAYFA_SAY}`;
+  $("albumGeri").disabled = albumSayfa === 0; $("albumIleri").disabled = albumSayfa === SAYFA_SAY - 1;
   const n = say[1] + say[2] + say[3];
   $("albumOzet").textContent = `${n} / ${S.length} · 🥇 ${say[3]} · 🥈 ${say[2]} · 🥉 ${say[1]}`;
-  $("albumBilgi").textContent = n ? "Bir sticker'a dokun" : "Henüz boş: bildiğin şarkılar burada sticker olacak 🐾";
+  $("albumBilgi").textContent = n ? "Bir sticker'a dokun · sayfayı kaydırarak çevir" : "Henüz boş: bildiğin şarkılar burada sticker olacak 🐾";
+}
+function albumAc() {  // yeni sticker varsa onun sayfasından açılır
+  const al = album(), gor = depoOku("in-album-gor", {}) || {}, i = ALBUM_SIRA.findIndex(s => (al[s.id] || 0) > (gor[s.id] || 0));
+  albumSayfa = i >= 0 ? Math.floor(i / SAYFA) : 0;
+  $("albumPanel").showModal(); albumCiz();
+}
+function sayfaCevir(y) {
+  const n = albumSayfa + y;
+  if (n < 0 || n >= SAYFA_SAY) return;
+  albumSayfa = n; albumCiz(y);
 }
 function albumBilgi(id) {
   const s = BIL.get(id), k = album()[id], kez = gecmis().filter(x => x[3] === id && x[4]).length;
@@ -590,10 +687,16 @@ function yeniTur() {
   if (mod === "soz") sozKur();
   else kesitSec();
   $("sahne").classList.remove("acik");
+  clearTimeout(acZaman); $("plak").classList.remove("kapakli");
+  if (mod === "dinle" || mod === "sozsuz") {  // bilince etikete gelecek kapak önceden yüklensin
+    const u = `https://i.ytimg.com/vi/${T.id}/mqdefault.jpg`;
+    $("plak").style.setProperty("--kapak", `url("${u}")`); new Image().src = u;
+  }
   $("tahmin").value = ""; $("zTahmin").value = ""; oneriKapat(); $("hata").textContent = "";
   yukle(); ciz();
 }
 const hak = () => mod === "soz" ? PUAN_SOZ.length : SURELER.length;
+let acZaman = 0;  // bilince videonun açılmasını bekleten zamanlayıcı
 function ciz() {
   const u = izinli(), soz = mod === "soz", hiz = mod === "hiz";
   $("acilan").style.width = (bitti || hiz ? 100 : u / toplam() * 100) + "%";
@@ -607,13 +710,16 @@ function ciz() {
   $("zIpucu").textContent = adim < hak() - 1 ? "Harf aç" : "Pes et";
   $("form").hidden = $("zForm").hidden = bitti; $("sonuc").hidden = !bitti;
   if (soz) sozCiz();
-  $("denemeler").innerHTML = Array.from({ length: hak() }, (_, i) => {
-    const d = denemeler[i];
-    if (!d) return `<li><span class="im">${i + 1}</span><span></span></li>`;
+  // şerit bölmeleri: 1-2-4-7-11-16 (zor: 0,5-1-2-3-5-8) sınırları
+  $("bolmeler").innerHTML = hiz ? "" : sureler().slice(0, -1).map(s => `<i class="bolme" style="left:${s / toplam() * 100}%"></i>`).join("");
+  // kullanılan denemeler satır satır, kalan haklar tek satırda nokta
+  const kalan = hak() - denemeler.length;
+  $("denemeler").innerHTML = denemeler.map(d => {
     const [sinif, im, yazi] = d.tip === "pas" ? ["pas", "⤼", soz ? "Harf açıldı" : "Pas"] : d.tip === "dogru" ? ["dogru", "✓", d.yazi]
       : d.tip === "sanatci" ? ["sanatci", "≈", d.yazi + (soz ? " · çok yakın" : " · sanatçı doğru")] : ["yanlis", "✕", d.yazi];
     return `<li class="${sinif}"><span class="im">${im}</span><span>${esc(yazi)}</span></li>`;
-  }).join("");
+  }).join("") + (bitti || kalan <= 0 ? "" : `<li class="kalan" aria-label="${kalan} hakkın kaldı">` +
+    Array.from({ length: kalan }, (_, i) => `<span class="nokta${i ? "" : " simdi"}"></span>`).join("") + `<span>${kalan} hak</span></li>`);
   $("sTur").textContent = skor.tur; $("sPuan").textContent = skor.puan; $("sSeri").textContent = skor.seri;
 }
 const etiket = s => `${s.ad} — ${s.sanatci}`;
@@ -659,7 +765,11 @@ function bitir(dogru, s) {
   $("puan").textContent = `+${p} puan`;
   ciz();
   if (dogru) yagmur();  // ciz'den sonra: Söz'de ciz sözleri yeniden yazar, saçılan sticker'lar silinmesin
-  if (!soz) { $("sahne").classList.add("acik"); dur(); cal(); }  // bitti: video görünür, kesit baştan sonuna çalar
+  if (!soz) {  // bitti: plağın etiketi kapağa döner ve kesit baştan sonuna çalar; 1,6 sn sonra video görünür
+    $("plak").classList.add("kapakli"); dur(); cal();
+    const t = T; clearTimeout(acZaman);
+    acZaman = setTimeout(() => { if (bitti && T === t) $("sahne").classList.add("acik"); }, hareketAz() ? 0 : 1600);
+  }
 }
 
 // ---- Öneri listesi: yazdıkça şarkı adı + sanatçıya göre süzer (en çok 40, liste kendi içinde kayar), ok tuşları ve dokunma ile seçilir
@@ -724,14 +834,27 @@ $("zIpucu").addEventListener("click", pas);
 $("zForm").addEventListener("submit", e => { e.preventDefault(); sozTahmin(); });
 
 // Albüm / İstatistik panelleri: dokununca açılır, ✕ ya da dışına dokununca kapanır
-$("albumAc").addEventListener("click", () => { albumCiz(); $("albumPanel").showModal(); });
+$("albumAc").addEventListener("click", albumAc);
+$("albumGeri").addEventListener("click", () => sayfaCevir(-1));
+$("albumIleri").addEventListener("click", () => sayfaCevir(1));
+$("albumPanel").addEventListener("keydown", e => { if (e.key === "ArrowLeft") sayfaCevir(-1); else if (e.key === "ArrowRight") sayfaCevir(1); });
+// parmakla sayfa çevirme: yatay 50 px'ten uzun kaydırma (dikey kaydırma panelin kendisinde kalır); kaydırmanın sonundaki dokunuş sticker seçmesin
+let kayX = null;
+$("albumSayfa").addEventListener("pointerdown", e => { kayX = e.clientX; });
+$("albumSayfa").addEventListener("pointercancel", () => { kayX = null; });
+$("albumSayfa").addEventListener("pointerup", e => {
+  if (kayX === null) return;
+  const d = e.clientX - kayX; kayX = null;
+  if (Math.abs(d) > 50) { sonKaydirma = Date.now(); sayfaCevir(d < 0 ? 1 : -1); }
+});
 $("istatAc").addEventListener("click", () => { istatCiz(); $("istatPanel").showModal(); });
 for (const d of document.querySelectorAll("dialog.panel")) {
   d.addEventListener("click", e => { if (e.target === d || e.target.closest(".kapat")) d.close(); });
 }
-$("albumGrid").addEventListener("click", e => { const b = e.target.closest(".stk[data-id]"); if (b) albumBilgi(b.dataset.id); });
+$("albumGrid").addEventListener("click", e => { const b = e.target.closest(".stk[data-id]"); if (b && Date.now() - sonKaydirma > 400) albumBilgi(b.dataset.id); });
 
 $("sarkiSay").textContent = S.length;
+depoYaz("in-toplam", S.length);  // giriş sayfası albüm çubuğu için (aynı adres)
 albumSayYaz();
 modSec(mod);
 // Ana ekrana eklenince internetsiz de açılsın (sw.js: sayfa ve simgeler; şarkı kesitleri yine internetten)
