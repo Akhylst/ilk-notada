@@ -1,0 +1,16 @@
+{
+  "name": "İlk Notada",
+  "short_name": "İlk Notada",
+  "description": "Şarkıyı ilk notadan bil",
+  "lang": "tr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6f3fb",
+  "theme_color": "#f6f3fb",
+  "icons": [
+    { "src": "ikon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "ikon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "ikon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

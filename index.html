@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>İlk Notada</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="ikon-180.png">
+<link rel="icon" href="ikon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="İlk Notada">
+<meta name="theme-color" content="#f6f3fb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f0c15" media="(prefers-color-scheme: dark)">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;800&family=Inter:wght@400;500;600;700&display=swap">
@@ -155,6 +162,8 @@ body:not([data-mod="hiz"]) .hizli, body[data-mod="hiz"] #denemeler { display: no
 .sonuc .denemeler { justify-self: stretch; text-align: left; }
 .albumNot { padding: 5px 14px; border-radius: 999px; background: var(--amber-y); color: var(--amber); font-weight: 700; font-size: .88rem; }
 .albumNot:empty { display: none; }
+.evLink { justify-self: center; padding: 8px 16px; border-radius: 999px; color: var(--soluk); font-weight: 600; font-size: .9rem; text-decoration: none; }
+.evLink:hover { background: var(--kart); }
 /* Albüm ve İstatistik: kartın altında iki düğme, tam ekrana yakın panel (dialog) */
 .altDugmeler { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .altDugmeler button { background: var(--kart); color: var(--murekkep); border: 1px solid var(--cizgi); box-shadow: var(--golge); border-radius: 16px; min-height: 54px; font-weight: 700; }
@@ -315,6 +324,7 @@ dialog.panel::backdrop { background: rgba(20, 12, 32, .5); }
     <summary>Şarkılar nereden?</summary>
     <p>Hepsi senin YouTube Music listelerinden (Aralık–Şubat, Mart–Mayıs ve Haziran–Ağustos Recap'leri, go girl, 2024): <span id="sarkiSay"></span> şarkı. Tahmindeki kesitler şarkıların girişinden ve rastgele yerlerinden kesildi; sözsüz haller yapay zekâyla vokal ayrılarak yapıldı (yer yer vokal izi kalabilir); sözler YouTube Music'ten. Bilince açılan video YouTube'dan. Her modun puanı ayrı, bu telefonda saklanır.</p>
   </details>
+  <a class="evLink" href="/">🏠 Bizim Oyunlar</a>
 </div>
 
 <script>
@@ -724,6 +734,8 @@ $("albumGrid").addEventListener("click", e => { const b = e.target.closest(".stk
 $("sarkiSay").textContent = S.length;
 albumSayYaz();
 modSec(mod);
+// Ana ekrana eklenince internetsiz de açılsın (sw.js: sayfa ve simgeler; şarkı kesitleri yine internetten)
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 </script>
 <script src="https://www.youtube.com/iframe_api"></script>
 </body>
