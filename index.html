@@ -55,6 +55,9 @@ h1 small { display: block; margin-top: 4px; font: 500 .72rem/1.2 var(--f); lette
 .ortu { position: absolute; inset: 0; display: grid; place-items: center; background: radial-gradient(70% 90% at 50% 50%, var(--mor-y), var(--kart-2));
   transition: opacity .6s ease, visibility .6s; }
 .sahne.acik .ortu { opacity: 0; visibility: hidden; }
+/* Dokunmatik ekranda örtü dokunuşu geçirir: dokunuş alttaki YouTube oynatıcısına gider. Telefon tarayıcıları sesli videoyu ancak oynatıcıya
+   dokunulunca başlatıyor; üstteki düğmeden kodla "çal" demek iPhone'da sessiz kalıyordu (23 Kas) */
+@media (pointer: coarse) { .ortu, .ortu * { pointer-events: none; } }
 .ortu > * { grid-area: 1 / 1; }
 .plak { height: 84%; width: auto; aspect-ratio: 1; border-radius: 50%; position: relative; box-shadow: 0 14px 30px -12px rgba(0, 0, 0, .6);
   background: repeating-radial-gradient(circle, var(--plak) 0 2px, var(--plak-oluk) 2.5px 3px), var(--plak); }
@@ -219,13 +222,25 @@ window.onYouTubeIframeAPIReady = () => {
     playerVars: { playsinline: 1, controls: 0, disablekb: 1, rel: 0, iv_load_policy: 3, fs: 0, origin: location.origin },
     events: {
       onReady: () => { hazir = true; if (T) yukle(); durumYaz(); },
-      onStateChange: e => { if (e.data === YT.PlayerState.ENDED) dur(); },
+      onStateChange: durumDegisti,
       onError: () => { if (T) bozuk.add(T.id); dur(); yeniTur(); },  // gömülemeyen ya da kalkmış video: sıradakine geç
     },
   });
 };
 function yukle() { if (hazir && T) player.cueVideoById({ videoId: T.id, startSeconds: T.bas }); }
 const izinli = () => bitti ? Infinity : SURELER[adim];
+// Oynatıcının kendi durumu esas: telefonda çalmayı dokunuşla YouTube başlatır, biz yalnız süreyi sayıp durdururuz
+function durumDegisti(e) {
+  const D = YT.PlayerState;
+  if (e.data === D.PLAYING && T) {
+    const t = player.getCurrentTime() - T.bas;
+    if (!bitti && (t < -0.3 || t > izinli())) player.seekTo(T.bas, true);  // girişin dışından başladıysa girişe al
+    if (!caliyor) { caliyor = true; calYaz(); clearInterval(izle); izle = setInterval(takip, 30); }
+  } else if ((e.data === D.PAUSED || e.data === D.ENDED) && caliyor) {
+    clearInterval(izle); caliyor = false; calYaz();
+    if (!bitti) { $("calan").style.width = "0%"; player.seekTo(T.bas, true); }
+  }
+}
 function cal() {
   if (!hazir || !T) return;
   if (caliyor) return dur();
@@ -243,7 +258,7 @@ function dur() {
   clearInterval(izle);
   if (caliyor && player?.pauseVideo) player.pauseVideo();
   caliyor = false; calYaz();
-  if (!bitti) $("calan").style.width = "0%";
+  if (!bitti) { $("calan").style.width = "0%"; if (T && hazir) player.seekTo(T.bas, true); }  // sonraki dokunuş yine girişten başlasın
 }
 function calYaz() {
   $("cal").classList.toggle("caliyor", caliyor); $("plak").classList.toggle("doner", caliyor);
