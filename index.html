@@ -52,12 +52,9 @@ h1 small { display: block; margin-top: 4px; font: 500 .72rem/1.2 var(--f); lette
 /* Sahne: 16:9 video kutusu; plak üstünde durur, bilinince kayıp video görünür */
 .sahne { position: relative; aspect-ratio: 16 / 9; max-width: 100%; border-radius: 18px; overflow: hidden; background: var(--kart-2); }
 .video, .video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-.ortu { position: absolute; inset: 0; display: grid; place-items: center; background: radial-gradient(70% 90% at 50% 50%, var(--mor-y), var(--kart-2));
+.ortu { position: absolute; inset: 0; cursor: pointer; display: grid; place-items: center; background: radial-gradient(70% 90% at 50% 50%, var(--mor-y), var(--kart-2));
   transition: opacity .6s ease, visibility .6s; }
 .sahne.acik .ortu { opacity: 0; visibility: hidden; }
-/* Dokunmatik ekranda örtü dokunuşu geçirir: dokunuş alttaki YouTube oynatıcısına gider. Telefon tarayıcıları sesli videoyu ancak oynatıcıya
-   dokunulunca başlatıyor; üstteki düğmeden kodla "çal" demek iPhone'da sessiz kalıyordu (23 Kas) */
-@media (pointer: coarse) { .ortu, .ortu * { pointer-events: none; } }
 .ortu > * { grid-area: 1 / 1; }
 .plak { height: 84%; width: auto; aspect-ratio: 1; border-radius: 50%; position: relative; box-shadow: 0 14px 30px -12px rgba(0, 0, 0, .6);
   background: repeating-radial-gradient(circle, var(--plak) 0 2px, var(--plak-oluk) 2.5px 3px), var(--plak); }
@@ -116,7 +113,6 @@ button:focus-visible, summary:focus-visible { outline: 2px solid var(--vurgu); o
 .sonuc .sanatciAd { color: var(--soluk); font-weight: 600; }
 .puan { font: 800 2rem/1 var(--fb); font-variant-numeric: tabular-nums; color: var(--vurgu); }
 .sonuc .ana { justify-self: stretch; }
-.durum { margin: 0; text-align: center; color: var(--soluk); font-size: .9rem; }
 details { background: var(--kart); border: 1px solid var(--cizgi); border-radius: 16px; padding: 12px 16px; font-size: .9rem; color: var(--soluk); }
 details summary { cursor: pointer; font-weight: 600; color: var(--murekkep); }
 details p { margin: 8px 0 0; }
@@ -166,7 +162,7 @@ details p { margin: 8px 0 0; }
     </div>
     <div class="serit" id="serit" aria-hidden="true"><div class="acilan" id="acilan"></div><div class="calan" id="calan"></div></div>
     <div class="seritAlt"><span id="sureYazi"><b>1 sn</b> dinleyebilirsin</span><span>16 sn</span></div>
-    <p class="durum" id="durum">Oynatıcı yükleniyor…</p>
+    <audio id="kesit" preload="auto" playsinline></audio>
 
     <form id="form" autocomplete="off">
       <div class="ara">
@@ -195,13 +191,13 @@ details p { margin: 8px 0 0; }
   <details>
     <span class="st" aria-hidden="true" style="--b:1.6rem;--r:14deg;top:-12px;right:10px">🐶</span>
     <summary>Nasıl oynanır?</summary>
-    <p>Plağın ortasındaki düğmeye bas: şarkının girişinden 1 saniye çalar. Bildiysen adını yaz, listeden seç. Bilemezsen ya da "Pas" dersen dinleyebileceğin kısım uzar: 1, 2, 4, 7, 11, 16 saniye. Ne kadar az dinleyip bilirsen o kadar çok puan: 100, 80, 60, 40, 25, 10. Yanlış tahminde sanatçı doğruysa sarı yanar. Bilince ya da 6 hak bitince şarkı videosuyla baştan çalar.</p>
+    <p>Plağın ortasındaki düğmeye bas: şarkının girişinden 1 saniye çalar. Bildiysen adını yaz, listeden seç. Bilemezsen ya da "Pas" dersen dinleyebileceğin kısım uzar: 1, 2, 4, 7, 11, 16 saniye. Ne kadar az dinleyip bilirsen o kadar çok puan: 100, 80, 60, 40, 25, 10. Yanlış tahminde sanatçı doğruysa sarı yanar. Bilince ya da 6 hak bitince giriş baştan çalar ve şarkının videosu açılır; tamamını dinlemek için videoya dokun.</p>
   </details>
   <details>
     <span class="st" aria-hidden="true" style="--b:1.5rem;--r:-12deg;top:-12px;right:44px">🍓</span>
     <span class="st" aria-hidden="true" style="--b:1.4rem;--r:10deg;top:-10px;right:10px">💿</span>
     <summary>Şarkılar nereden?</summary>
-    <p>Hepsi senin YouTube Music listelerinden (Aralık–Şubat, Mart–Mayıs ve Haziran–Ağustos Recap'leri, go girl, 2024): <span id="sarkiSay"></span> şarkı. Ses YouTube oynatıcısından geliyor; puanların ve serin bu telefonda saklanır.</p>
+    <p>Hepsi senin YouTube Music listelerinden (Aralık–Şubat, Mart–Mayıs ve Haziran–Ağustos Recap'leri, go girl, 2024): <span id="sarkiSay"></span> şarkı. Tahmindeki girişler şarkıların ilk saniyelerinden kesildi; bilince açılan video YouTube'dan. Puanların ve serin bu telefonda saklanır.</p>
   </details>
 </div>
 
@@ -240,81 +236,66 @@ sira = sira.filter(id => BIL.has(id));
 let T = null, adim = 0, denemeler = [], bitti = false;
 
 function karistir(L) { L = [...L]; for (let i = L.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [L[i], L[j]] = [L[j], L[i]]; } return L; }
-// Sıradaki şarkı: liste karışık sırayla biter, bitince yeniden karışır; bozuk (oynamayan) videolar atlanır
-function siradaki(atla) {
+// Sıradaki şarkı: liste karışık sırayla biter, bitince yeniden karışır
+function siradaki() {
   for (let i = 0; i <= S.length * 2; i++) {
     if (!sira.length) sira = karistir(S.map(s => s.id).filter(id => id !== T?.id || S.length === 1));
     const id = sira.pop();
     depoYaz("in-sira", sira);
-    if (!atla.has(id)) return BIL.get(id);
+    if (BIL.has(id)) return BIL.get(id);
   }
   return S[0];
 }
 
-// ---- YouTube oynatıcısı: şarkının girişinden (bas) en çok izin verilen saniye kadar çalar, sonra durur
-let player = null, hazir = false, caliyor = false, izle = 0;
-const bozuk = new Set();
-window.onYouTubeIframeAPIReady = () => {
-  player = new YT.Player("oynatici", {
-    width: "100%", height: "100%",
-    playerVars: { playsinline: 1, controls: 0, disablekb: 1, rel: 0, iv_load_policy: 3, fs: 0, origin: location.origin },
-    events: {
-      onReady: () => { hazir = true; if (T) yukle(); durumYaz(); },
-      onStateChange: durumDegisti,
-      onError: () => { if (T) bozuk.add(T.id); dur(); yeniTur(); },  // gömülemeyen ya da kalkmış video: sıradakine geç
-    },
-  });
-};
-function yukle() { if (hazir && T) player.cueVideoById({ videoId: T.id, startSeconds: T.bas }); }
+// ---- Ses: tahmin sırasında siteye konmuş 16,5 sn'lik giriş kesiti çalar (ses/<id>.m4a, girişin duyulduğu andan). YouTube'dan çalmak
+// reklamlı şarkılarda reklama takılıyordu (23 Kas); <audio> dokununca telefonda da anında çalar. YouTube videosu yalnız bilince açılır
+const kesit = $("kesit");
+let caliyor = false, izle = 0;
 const izinli = () => bitti ? Infinity : SURELER[adim];
-// Oynatıcının kendi durumu esas: telefonda çalmayı dokunuşla YouTube başlatır, biz yalnız süreyi sayıp durdururuz
-function durumDegisti(e) {
-  const D = YT.PlayerState;
-  if (e.data === D.PLAYING && T) {
-    const t = player.getCurrentTime() - T.bas;
-    if (!bitti && (t < -0.3 || t > izinli())) player.seekTo(T.bas, true);  // girişin dışından başladıysa girişe al
-    if (!caliyor) { caliyor = true; calYaz(); clearInterval(izle); izle = setInterval(takip, 30); }
-  } else if ((e.data === D.PAUSED || e.data === D.ENDED) && caliyor) {
-    clearInterval(izle); caliyor = false; calYaz();
-    if (!bitti) { $("calan").style.width = "0%"; player.seekTo(T.bas, true); }
-  } else if (e.data === D.UNSTARTED && oncekiDurum === D.BUFFERING) {
-    player.playVideo();  // dokunuşla yüklendi ama başlamadı (telefonda ilk dokunuşta oluyor): bir kez daha çal
-  }
-  oncekiDurum = e.data;
-}
-let oncekiDurum = null;
 function cal() {
-  if (!hazir || !T) return;
+  if (!T) return;
   if (caliyor) return dur();
-  player.unMute(); player.setVolume(100);
-  player.seekTo(T.bas, true); player.playVideo();
-  caliyor = true; calYaz();
-  clearInterval(izle); izle = setInterval(takip, 30);
+  kesit.currentTime = 0;
+  const oynat = kesit.play();
+  caliyor = true; calYaz(); $("hata").textContent = "";
+  oynat?.catch?.(() => { caliyor = false; calYaz(); clearInterval(izle); $("hata").textContent = "Ses çalınamadı; plağa tekrar dokun."; });
+  clearInterval(izle); izle = setInterval(takip, 20);
 }
 function takip() {
-  const t = Math.max(0, (player.getCurrentTime?.() || T.bas) - T.bas);
+  const t = kesit.currentTime;
   $("calan").style.width = Math.min(100, t / TOPLAM * 100) + "%";
-  if (t >= izinli()) dur();
+  if (t >= izinli() || kesit.ended) dur();
 }
 function dur() {
   clearInterval(izle);
-  if (caliyor && player?.pauseVideo) player.pauseVideo();
+  kesit.pause();
   caliyor = false; calYaz();
-  if (!bitti) { $("calan").style.width = "0%"; if (T && hazir) player.seekTo(T.bas, true); }  // sonraki dokunuş yine girişten başlasın
+  if (!bitti) $("calan").style.width = "0%";
 }
 function calYaz() {
   $("cal").classList.toggle("caliyor", caliyor); $("plak").classList.toggle("doner", caliyor);
   $("cal").setAttribute("aria-label", caliyor ? "Durdur" : "Çal");
 }
-function durumYaz() {
-  $("durum").textContent = hazir ? "" : window.YT ? "Oynatıcı yükleniyor…" : "YouTube oynatıcısı yüklenemedi; interneti kontrol edip sayfayı yenile.";
-  $("durum").hidden = !$("durum").textContent;
-}
+// YouTube: yalnız sonuçta; video görünür, şarkının tamamı için ona dokunulur (çalmaya başlayınca kesit susar)
+let player = null, ytHazir = false;
+window.onYouTubeIframeAPIReady = () => {
+  player = new YT.Player("oynatici", {
+    width: "100%", height: "100%",
+    playerVars: { playsinline: 1, rel: 0, iv_load_policy: 3, origin: location.origin },
+    events: {
+      onReady: () => { ytHazir = true; if (T) yukle(); },
+      onStateChange: e => { if (e.data === YT.PlayerState.PLAYING) dur(); },
+    },
+  });
+};
+function yukle() { if (ytHazir && T) player.cueVideoById({ videoId: T.id, startSeconds: T.bas }); }
 
 // ---- Tur
 function yeniTur() {
   dur();
-  T = siradaki(bozuk); adim = 0; denemeler = []; bitti = false;
+  if (ytHazir) player.stopVideo();
+  T = siradaki(); adim = 0; denemeler = []; bitti = false;
+  kesit.src = `ses/${T.id}.m4a`; kesit.load();
   $("sahne").classList.remove("acik");
   $("tahmin").value = ""; oneriKapat(); $("hata").textContent = "";
   yukle(); ciz();
@@ -323,7 +304,7 @@ function ciz() {
   const u = izinli();
   $("acilan").style.width = (bitti ? 100 : u / TOPLAM * 100) + "%";
   if (!caliyor) $("calan").style.width = "0%";
-  $("sureYazi").innerHTML = bitti ? "Şarkı baştan çalıyor" : `<b>${u} sn</b> dinleyebilirsin`;
+  $("sureYazi").innerHTML = bitti ? "Tamamı için videoya dokun" : `<b>${u} sn</b> dinleyebilirsin`;
   $("pas").textContent = adim < 5 ? `Pas (+${SURELER[adim + 1] - u} sn)` : "Pes et";
   $("form").hidden = bitti; $("sonuc").hidden = !bitti;
   $("denemeler").innerHTML = Array.from({ length: 6 }, (_, i) => {
@@ -392,6 +373,7 @@ function yazilanSarki() {
 }
 
 $("cal").addEventListener("click", cal);
+document.querySelector(".ortu").addEventListener("click", e => { if (!e.target.closest("#cal")) cal(); });
 $("pas").addEventListener("click", pas);
 $("sonraki").addEventListener("click", () => yeniTur());
 $("tahmin").addEventListener("input", oneriYaz);
@@ -413,7 +395,6 @@ $("form").addEventListener("submit", e => {
 
 $("sarkiSay").textContent = S.length;
 yeniTur();
-setTimeout(durumYaz, 8000);  // 8 sn'de oynatıcı gelmediyse uyarı
 </script>
 <script src="https://www.youtube.com/iframe_api"></script>
 </body>
