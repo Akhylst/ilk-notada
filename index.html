@@ -128,7 +128,7 @@ details p { margin: 8px 0 0; }
 /* Mod seçici (Dinle · Sözsüz · Söz); Söz modunda plak/şerit/şarkı arama gizli, Söz alanı görünür */
 .modlar { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 4px; padding: 4px; border-radius: 16px; background: var(--kart);
   border: 1px solid var(--cizgi); box-shadow: var(--golge); }
-.modlar button { min-height: 42px; padding: 0 6px; border-radius: 12px; background: none; color: var(--soluk); font-weight: 700; font-size: .93rem; }
+.modlar button { min-height: 42px; padding: 0 2px; border-radius: 12px; background: none; color: var(--soluk); font-weight: 700; font-size: .86rem; white-space: nowrap; }
 .modlar button[aria-pressed="true"] { background: var(--ana); color: var(--ana-metin); }
 body[data-mod="soz"] .sesli, body:not([data-mod="soz"]) .sozlu { display: none !important; }
 .sozAlan { display: grid; gap: 12px; }
@@ -145,6 +145,14 @@ body[data-mod="soz"] .sesli, body:not([data-mod="soz"]) .sozlu { display: none !
 /* Zor mod anahtarı: skor kutularının yanında; açıkken turuncu-kırmızı */
 .zorDug { min-height: 44px; padding: 0 14px; border-radius: 12px; background: var(--kart); color: var(--soluk); border: 1px solid var(--cizgi); box-shadow: var(--golge); font-weight: 700; font-size: .9rem; }
 .zorDug[aria-pressed="true"] { background: linear-gradient(135deg, #ff7a3d, #e8304f); color: #fff; border-color: transparent; }
+/* Hız modu: süre ve sayaç; deneme satırları yerine sonuçta bilinen/geçilen listesi */
+body:not([data-mod="hiz"]) .hizli, body[data-mod="hiz"] #denemeler { display: none !important; }
+.hizAlan { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; text-align: center; }
+.hizAlan > div { padding: 8px; border-radius: 14px; background: var(--kart-2); font-size: .8rem; font-weight: 700; color: var(--soluk); letter-spacing: .04em; text-transform: uppercase; }
+.hizAlan b { display: block; font: 800 1.7rem/1.2 var(--fb); color: var(--murekkep); letter-spacing: 0; font-variant-numeric: tabular-nums; }
+.hizAlan .azKaldi b { color: var(--kirmizi); }
+.hizSon { grid-column: 1 / -1; margin: 0; min-height: 1.4em; font-weight: 600; color: var(--soluk); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sonuc .denemeler { justify-self: stretch; text-align: left; }
 @media (prefers-reduced-motion: reduce) { .plak.doner { animation: none; } .ortu, .serit .acilan, button { transition: none; } }
 </style>
 </head>
@@ -154,9 +162,9 @@ body[data-mod="soz"] .sesli, body:not([data-mod="soz"]) .sozlu { display: none !
     <div class="marka"><span class="logo" aria-hidden="true"></span><h1>İlk Notada<small id="altBaslik">Kulak muayenesi · şarkının bir yerinden bil</small></h1></div>
     <span class="st" aria-hidden="true" style="--b:1.35rem;--r:-16deg;top:-10px;left:-8px">🎧</span>
     <dl class="skor" aria-label="Skor">
-      <div><dt>Tur</dt><dd id="sTur">0</dd></div>
-      <div><dt>Puan</dt><dd id="sPuan">0</dd></div>
-      <div><dt>Seri</dt><dd id="sSeri">0</dd></div>
+      <div><dt id="dTur">Tur</dt><dd id="sTur">0</dd></div>
+      <div><dt id="dPuan">Puan</dt><dd id="sPuan">0</dd></div>
+      <div><dt id="dSeri">Seri</dt><dd id="sSeri">0</dd></div>
     </dl>
     <button type="button" class="zorDug" id="zor" aria-pressed="false">🔥 Zor</button>
   </header>
@@ -164,6 +172,7 @@ body[data-mod="soz"] .sesli, body:not([data-mod="soz"]) .sozlu { display: none !
     <button type="button" data-mod="dinle" aria-pressed="true">🎧 Dinle</button>
     <button type="button" data-mod="sozsuz" aria-pressed="false">🎹 Sözsüz</button>
     <button type="button" data-mod="soz" aria-pressed="false">📝 Söz</button>
+    <button type="button" data-mod="hiz" aria-pressed="false">⏱ Hız</button>
   </nav>
 
   <main class="kart">
@@ -189,6 +198,11 @@ body[data-mod="soz"] .sesli, body:not([data-mod="soz"]) .sozlu { display: none !
     <div class="serit sesli" id="serit" aria-hidden="true"><div class="acilan" id="acilan"></div><div class="calan" id="calan"></div></div>
     <div class="seritAlt sesli"><span id="sureYazi"><b>1 sn</b> dinleyebilirsin</span><span id="toplamYazi">16 sn</span></div>
     <audio id="kesit" preload="auto" playsinline></audio>
+    <div class="hizAlan hizli" aria-live="polite">
+      <div id="hizSaatKutu">Süre<b id="hizSaat">60</b></div>
+      <div>Bilinen<b id="hizSay">0</b></div>
+      <p class="hizSon" id="hizSon"></p>
+    </div>
 
     <div class="sozAlan sozlu">
       <p class="sozBas"><b id="zAd"></b><span id="zSanatci"></span></p>
@@ -223,6 +237,7 @@ body[data-mod="soz"] .sesli, body:not([data-mod="soz"]) .sozlu { display: none !
       <p class="sanatciAd" id="sSanatci"></p>
       <p class="puan" id="puan"></p>
       <p class="etk kediNot" id="kediNot"></p>
+      <ol class="denemeler hizli" id="hizListe" aria-label="Bu turun şarkıları"></ol>
       <button type="button" class="ana" id="sonraki">Sonraki şarkı</button>
     </section>
   </main>
@@ -233,6 +248,7 @@ body[data-mod="soz"] .sesli, body:not([data-mod="soz"]) .sozlu { display: none !
     <p><b>Dinle:</b> plağa dokun, şarkının rastgele bir yerinden (bazen girişinden) 1 saniye çalar. Bildiysen adını yaz, listeden seç. Bilemezsen ya da "Pas" dersen dinleyebileceğin kısım uzar: 1, 2, 4, 7, 11, 16 saniye. Ne kadar az dinleyip bilirsen o kadar çok puan: 100, 80, 60, 40, 25, 10. Yanlış tahminde sanatçı doğruysa sarı yanar. Bilince ya da 6 hak bitince kesit baştan çalar ve şarkının videosu açılır; devamı için videoya dokun.</p>
     <p><b>Sözsüz:</b> aynı oyun, ama şarkının sözsüz hali çalar: yalnız müzik ve ritim.</p>
     <p><b>Söz:</b> şarkının adı ve sözlerinden bir parça yazar, bir kelime eksik; onu bul. Kutular harf sayısı kadar. Her yanlış ya da "Harf aç" bir harf açar; 4 hak, puan 100, 70, 40, 20. Kökü doğru yazarsan sarı yanar.</p>
+    <p><b>⏱ Hız:</b> 60 saniyede bildiğin kadar şarkı. Plağa dokununca süre başlar; kesitin tamamını dinleyebilirsin. Bildiğin an sıradaki çalar, "Pas" ile geçersin. En iyi skorun rekor olarak saklanır.</p>
     <p><b>🔥 Zor:</b> Dinle ve Sözsüz'de giriş hiç çıkmaz, süreler 0,5 · 1 · 2 · 3 · 5 · 8 saniye, sanatçı ipucu yok. Söz'de şarkının adı bitene kadar gizli, kök ipucu yok. Zor modun puanı ayrı tutulur.</p>
   </details>
   <details>
@@ -281,6 +297,7 @@ const MODLAR = {
   dinle: { alt: "Kulak muayenesi · şarkının bir yerinden bil", ek: "" },
   sozsuz: { alt: "Ritim muayenesi · sözsüz halinden bil", ek: "-sozsuz" },
   soz: { alt: "Söz muayenesi · eksik kelimeyi bul", ek: "-soz" },
+  hiz: { alt: "Acil servis · 60 saniyede kaç şarkı?", ek: "-hiz" },  // Hız'da skor: tur = oyun, puan = rekor, seri = son oyun
 };
 const havuz = m => S.filter(s => (m === "soz" ? s.Z : m === "sozsuz" ? s.E : s.P).length);
 let mod = depoOku("in-mod", "dinle");
@@ -315,10 +332,11 @@ const yerler = () => mod === "sozsuz" ? T.E : T.P;
 const kesitYolu = () => mod === "sozsuz" ? `enstr/${T.id}-${parca}.m4a` : parca ? `ses/${T.id}-${parca}.m4a` : `ses/${T.id}.m4a`;
 const kesit = $("kesit");
 let caliyor = false, izle = 0;
-const izinli = () => bitti ? Infinity : sureler()[adim];
+const izinli = () => bitti || mod === "hiz" ? Infinity : sureler()[adim];
 function cal() {
-  if (!T) return;
+  if (!T || (mod === "hiz" && bitti)) return;
   if (caliyor) return dur();
+  hizBasla();
   kesit.currentTime = 0;
   const oynat = kesit.play();
   caliyor = true; calYaz(); $("hata").textContent = "";
@@ -352,7 +370,41 @@ window.onYouTubeIframeAPIReady = () => {
     },
   });
 };
-function yukle() { if (ytHazir && T && mod !== "soz") player.cueVideoById({ videoId: T.id, startSeconds: yerler()[parca] }); }
+function yukle() { if (ytHazir && T && (mod === "dinle" || mod === "sozsuz")) player.cueVideoById({ videoId: T.id, startSeconds: yerler()[parca] }); }
+
+// ---- Hız: 60 sn; ilk çalışta (ya da ilk tahmin/pasta) saat başlar. Doğru ya da pas → sıradaki şarkı hemen çalar (dokunuşun içinde, telefonda da)
+const HIZ_SURE = 60;
+let hz = { bas: 0, saat: 0, bulunan: [], gecilen: [] };
+function hizSifirla() {
+  clearInterval(hz.saat); hz = { bas: 0, saat: 0, bulunan: [], gecilen: [] };
+  $("hizSay").textContent = 0; $("hizSon").textContent = ""; $("hizListe").innerHTML = ""; hizTik();
+}
+const hizKalan = () => hz.bas ? Math.max(0, HIZ_SURE - (Date.now() - hz.bas) / 1000) : HIZ_SURE;
+function hizBasla() { if (mod !== "hiz" || hz.bas || bitti) return; hz.bas = Date.now(); hz.saat = setInterval(hizTik, 100); ciz(); }
+function hizTik() {
+  const k = hizKalan();
+  $("hizSaat").textContent = Math.ceil(k); $("hizSaatKutu").classList.toggle("azKaldi", hz.bas && k <= 10);
+  if (hz.bas && k <= 0 && !bitti) hizBitir();
+}
+function hizSonraki(dogru) {
+  (dogru ? hz.bulunan : hz.gecilen).push(T);
+  $("hizSay").textContent = hz.bulunan.length; $("hizSon").textContent = (dogru ? "✓ " : "⤼ ") + etiket(T);
+  dur(); T = siradaki(); kesitSec(); ciz(); cal();
+}
+function hizBitir() {
+  clearInterval(hz.saat); dur(); bitti = true;
+  const n = hz.bulunan.length, rekor = n > skor.puan;
+  skor.tur += 1; skor.seri = n; if (rekor) skor.puan = n;
+  depoYaz(skorAnahtar(), skor);
+  $("karar").className = "cip iyi"; $("karar").textContent = "Süre doldu ⏱";
+  $("sAd").textContent = `${n} şarkı bildin`; $("sSanatci").textContent = rekor ? "Yeni rekor! 🎉" : `Rekorun: ${skor.puan}`;
+  $("puan").textContent = "";
+  $("kediNot").textContent = n ? `${rastgele(KEDILER)} onayladı 🐾` : `${rastgele(KEDILER)} de bilemedi 😿`;
+  $("hizListe").innerHTML = [...hz.bulunan.map(s => ["dogru", "✓", s]), ...hz.gecilen.map(s => ["pas", "⤼", s])]
+    .map(([c, im, s]) => `<li class="${c}"><span class="im">${im}</span><span>${esc(etiket(s))}</span></li>`).join("");
+  ciz();
+  if (rekor && n) yagmur();
+}
 
 // ---- Söz modu: parçadaki * işaretli kelimelerden (kur.py seçer) biri rastgele boşluk olur; her yanlış/"Harf aç" bir harf açar (önce ilk, sonra son,
 // sonra soldan; hepsi hiç açılmaz). Karşılaştırma Türkçe harfsiz (sade); kök tutarsa (biri ötekinin başı) sarı
@@ -384,27 +436,33 @@ function sozTahmin() {
 }
 
 // ---- Tur
+function kesitSec() {
+  const n = yerler().length, girissiz = zor && mod !== "sozsuz" && n > 1;  // Dinle/Hız'da 0. kesit giriş
+  parca = girissiz ? 1 + Math.floor(Math.random() * (n - 1)) : Math.floor(Math.random() * n);
+  kesit.src = kesitYolu(); kesit.load();
+}
 function yeniTur() {
   dur();
   if (ytHazir) player.stopVideo();
   T = siradaki(); adim = 0; denemeler = []; bitti = false;
+  hizSifirla();  // her modda: Hız'dan çıkınca saat dursun
   if (mod === "soz") sozKur();
-  else {
-    const n = yerler().length, girissiz = zor && mod === "dinle" && n > 1;  // Dinle'de 0. kesit giriş
-    parca = girissiz ? 1 + Math.floor(Math.random() * (n - 1)) : Math.floor(Math.random() * n);
-    kesit.src = kesitYolu(); kesit.load();
-  }
+  else kesitSec();
   $("sahne").classList.remove("acik");
   $("tahmin").value = ""; $("zTahmin").value = ""; oneriKapat(); $("hata").textContent = "";
   yukle(); ciz();
 }
 const hak = () => mod === "soz" ? PUAN_SOZ.length : SURELER.length;
 function ciz() {
-  const u = izinli(), soz = mod === "soz";
-  $("acilan").style.width = (bitti ? 100 : u / toplam() * 100) + "%";
+  const u = izinli(), soz = mod === "soz", hiz = mod === "hiz";
+  $("acilan").style.width = (bitti || hiz ? 100 : u / toplam() * 100) + "%";
   if (!caliyor) $("calan").style.width = "0%";
-  $("sureYazi").innerHTML = bitti ? (mod === "sozsuz" ? "Sözlü hali için videoya dokun" : "Devamı için videoya dokun") : `<b>${sn(u)} sn</b> dinleyebilirsin`;
-  $("pas").textContent = adim < 5 ? `Pas (+${sn(sureler()[adim + 1] - u)} sn)` : "Pes et";
+  $("sureYazi").innerHTML = hiz ? (bitti ? "Süre doldu" : hz.bas ? "Bildiğin an yaz · Pas: sıradaki" : "<b>Plağa dokun</b>, 60 saniye başlasın")
+    : bitti ? (mod === "sozsuz" ? "Sözlü hali için videoya dokun" : "Devamı için videoya dokun") : `<b>${sn(u)} sn</b> dinleyebilirsin`;
+  $("toplamYazi").textContent = sn(hiz ? TOPLAM : toplam()) + " sn";
+  $("pas").textContent = hiz ? "Pas (sıradaki)" : adim < 5 ? `Pas (+${sn(sureler()[adim + 1] - u)} sn)` : "Pes et";
+  $("sonraki").textContent = hiz ? "Tekrar oyna" : "Sonraki şarkı";
+  [$("dTur").textContent, $("dPuan").textContent, $("dSeri").textContent] = hiz ? ["Oyun", "Rekor", "Son"] : ["Tur", "Puan", "Seri"];
   $("zIpucu").textContent = adim < hak() - 1 ? "Harf aç" : "Pes et";
   $("form").hidden = $("zForm").hidden = bitti; $("sonuc").hidden = !bitti;
   if (soz) sozCiz();
@@ -422,11 +480,21 @@ function tahmin(s) {
   if (bitti || !T) return;
   if (!s) { $("hata").textContent = "Listeden bir şarkı seç."; return; }
   $("hata").textContent = ""; $("tahmin").value = ""; oneriKapat();
-  if (s.id === T.id || (sade(s.ad) === sade(T.ad) && sade(s.sanatci) === sade(T.sanatci))) return bitir(true, s);
+  const dogru = s.id === T.id || (sade(s.ad) === sade(T.ad) && sade(s.sanatci) === sade(T.sanatci));
+  if (mod === "hiz") {  // Hız: yanlış tur bitirmez, yalnız yazar
+    hizBasla();
+    if (dogru) return hizSonraki(true);
+    $("hata").textContent = "✕ " + etiket(s); return;
+  }
+  if (dogru) return bitir(true, s);
   denemeler.push({ tip: !zor && sade(s.sanatci) === sade(T.sanatci) ? "sanatci" : "yanlis", yazi: etiket(s) });
   ilerle();
 }
-function pas() { if (bitti || !T) return; denemeler.push({ tip: "pas" }); ilerle(); }
+function pas() {
+  if (bitti || !T) return;
+  if (mod === "hiz") { hizBasla(); return hizSonraki(false); }
+  denemeler.push({ tip: "pas" }); ilerle();
+}
 function ilerle() {
   if (adim >= hak() - 1) return bitir(false);
   adim += 1; ciz();
